@@ -1,0 +1,19 @@
+# ================= FRONTEND =================
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+
+# ================= BACKEND =================
+backend/target/
+backend/.mvn/
+backend/*.log
+backend/.env*
+
+# ================= IDE / OS =================
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# ================= COMMON =================
+.env
