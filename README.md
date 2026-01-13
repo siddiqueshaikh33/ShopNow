@@ -1,110 +1,228 @@
-# ShopNow
+# 🛒 ShopNow – Modern E‑Commerce Website
 
-**ShopNow** is a **full-stack e-commerce web application** designed to provide users with a seamless shopping experience. Users can browse products, add items to the cart, register/login, and place orders. The project is currently **under development** and includes both frontend and backend components.
+<p align="center">
+  <img src="./frontend/src/assets/shopnow-logo.png" alt="ShopNow App Logo" width="120" />
+</p>
 
----
+ShopNow is a **full-stack e-commerce web application** currently **under active development (Building in Progress)**. 
+It is designed with a modern UI, scalable backend, and secure authentication, providing a smooth shopping experience with cart management, order processing, and payment integration.
 
-## 🚀 Project Status
-**Status:** In Progress  
-- Core functionalities implemented:  
-  - User authentication and authorization (JWT)  
-  - Product browsing and cart management  
-  - Backend API integration  
-- Upcoming features:  
-  - Complete order management system  
-  - Admin panel for product management  
-  - Deployment and CI/CD setup  
 
 ---
 
-## 🛠 Technologies Used
+## ✨ Features
 
-### Frontend
-- React, JSX  
-- React Router for routing  
-- Context API for state management  
-- Axios for API requests  
-- Vite as the build tool  
+### 👤 User Features
 
-### Backend
-- Java, Spring Boot  
-- Maven for dependency management  
-- REST APIs for frontend communication  
-- MySQL database  
-- Razorpay for payment integration  
+* User registration & login (JWT-based authentication)
+* Browse products by category
+* Product search and filtering
+* Add to cart / update cart items
+* Order summary and checkout flow
+* Secure online payments (Razorpay integration)
+* View order history
+* Responsive UI for all devices
 
-### Tools & Utilities
-- Spring Tools Suite (STS) / Eclipse  
-- VS Code  
-- Postman for API testing  
-- Git & GitHub  
+### 🛠️ Admin Features
+
+* Admin authentication
+* Add / update / delete products
+* Manage categories
+* View all users
+* View and manage orders
+
+### 🔐 Security & Performance
+
+* JWT authentication & authorization
+* Secure API communication
+* Centralized error handling
+* Optimized API calls
 
 ---
 
-## 📂 Project Structure
+## 🏗️ Architecture
 
+ShopNow follows a **Modular Microservice Architecture**, designed to ensure scalability, maintainability, and clear separation of responsibilities.
+
+### Architecture Overview
+
+* Each core functionality is implemented as an independent module/service
+* Services communicate using **REST APIs**
+* Centralized authentication using **JWT**
+* Business logic isolated at the service layer
+* Database operations managed through JPA/Hibernate
+
+```text
+Client (React)
+   │
+   ├── Auth Service
+   ├── Product Service
+   ├── Cart Service
+   ├── Order Service
+   └── Payment Service (Razorpay)
+           │
+        MySQL Database
 ```
-ShopNow/
-├── frontend/ # React frontend application
-│ ├── src/ # Components, Pages, Routes, Context
-│ ├── public/ # Static assets
-│ ├── package.json
-│ └── .gitignore
-├── backend/ # Spring Boot backend application
-│ ├── src/main/java # Controllers, Services, Models
-│ ├── src/main/resources # application.properties
-│ ├── pom.xml
-│ └── .gitignore
-├── .gitignore
-└── README.md
-```
 
 ---
 
-## ⚡ Features
+## 🧰 Tech Stack
 
-- **User Authentication:** Register and login with JWT tokens  
-- **Product Management:** Browse products with images and details  
-- **Cart System:** Add, remove, and update items in the cart  
-- **Payment Integration:** Razorpay sandbox integration  
-- **Frontend-Backend Communication:** Axios calling Spring Boot REST APIs  
-- **Database Integration:** MySQL for users, products, and orders  
+### 🌐 Frontend
+
+* **React.js** – Component-based UI
+* **Tailwind CSS** – Modern utility-first styling
+* **Axios** – API communication
+* **React Context API** – Global state management
+* **React Router DOM** – Routing
+
+### ⚙️ Backend
+
+* **Java (Spring Boot)** – REST API development
+* **Spring Security** – Authentication & authorization
+* **JWT** – Secure token-based auth
+* **JPA / Hibernate** – ORM
+* **MySQL** – Relational database
+
+### 💳 Payments
+
+* **Razorpay API** – Secure payment gateway
+
+### 🧪 Tools & Utilities
+
+* **Postman** – API testing
+* **Git & GitHub** – Version control
+* **Maven** – Dependency management
 
 ---
 
-## 🔧 Installation & Setup
+## 🗂️ Project Structure
 
-### Prerequisites
-- Node.js & npm (for frontend)  
-- Java JDK 17+ (for backend)  
-- Maven (for backend)  
-- MySQL database  
-
----
-
-### 1️⃣ Clone the Repository
+### 📁 Frontend (`/frontend`)
 
 ```bash
-git clone https://github.com/siddiqueshaikh33/ShopNow.git
-cd ShopNow
+frontend/
+├── src/
+│   ├── components/        # Reusable UI components
+│   ├── pages/             # Page-level components
+│   ├── context/           # Global state (User, Cart)
+│   ├── api/               # Axios instances
+│   ├── assets/            # Images & static files
+│   ├── routes/            # Protected & public routes
+│   └── App.jsx
+└── package.json
+```
+
+### 📁 Backend (`/backend`)
+
+```bash
+backend/
+├── controller/            # REST controllers
+├── service/               # Business logic
+├── repository/            # JPA repositories
+├── model/                 # Entity classes
+├── security/              # JWT & Spring Security config
+├── dto/                   # Data Transfer Objects
+├── exception/             # Global exception handling
+└── ShopNowApplication.java
+```
+
+---
+
+## ⚙️ Local Setup Guide
+
+### 🔽 Prerequisites
+
+* Node.js (v18+ recommended)
+* Java JDK 17+
+* MySQL Server
+* Git
+
+---
+
+### ▶️ Backend Setup
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/shopnow.git
 cd backend
+```
 
-Create a .env file
-DB_URL=jdbc:mysql://localhost:3306/shopnow
-DB_USERNAME=root
-DB_PASSWORD=yourpassword
+2. Configure `application.properties`
 
-RAZORPAY_KEY=your_razorpay_key
-RAZORPAY_SECRET=your_razorpay_secret
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/shopnow
+spring.datasource.username=root
+spring.datasource.password=your_password
 
-Update application.properties to use environment variables:
-spring.datasource.url=${DB_URL}
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
+jwt.secret=your_jwt_secret
+razorpay.key=your_key
+razorpay.secret=your_secret
+```
 
-razorpay.key=${RAZORPAY_KEY}
-razorpay.secret=${RAZORPAY_SECRET}
+3. Run the backend
 
-Run backend:
-./mvnw spring-boot:run
+```bash
+mvn spring-boot:run
+```
 
+Backend will start at:
+
+```
+http://localhost:8080
+```
+
+---
+
+### ▶️ Frontend Setup
+
+1. Navigate to frontend
+
+```bash
+cd frontend
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Start the development server
+
+```bash
+npm run dev
+```
+
+Frontend will run at:
+
+```
+http://localhost:5173
+```
+
+---
+
+## 📚 Learnings & Takeaways
+
+* Hands-on experience with **full‑stack development**
+* Implemented **JWT authentication & role-based access**
+* Integrated **Razorpay payment gateway**
+* Improved understanding of **REST APIs**
+* Learned state management using **Context API**
+* Gained experience in **secure backend design**
+
+---
+
+## 🛠️ Tools & Technologies
+
+| Tool            | Purpose         |
+| --------------- | --------------- |
+| ⚛️ React        | Frontend UI     |
+| 🌱 Spring Boot  | Backend APIs    |
+| 🐬 MySQL        | Database        |
+| 🔐 JWT          | Authentication  |
+| 💳 Razorpay     | Payments        |
+| 🎨 Tailwind CSS | Styling         |
+| 🧪 Postman      | API Testing     |
+| 🧠 GitHub       | Version Control |
