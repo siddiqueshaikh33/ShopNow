@@ -43,6 +43,7 @@
 
 ## 📂 Project Structure
 
+```
 ShopNow/
 ├── frontend/ # React frontend application
 │ ├── src/ # Components, Pages, Routes, Context
@@ -56,7 +57,7 @@ ShopNow/
 │ └── .gitignore
 ├── .gitignore
 └── README.md
-
+```
 
 ---
 
