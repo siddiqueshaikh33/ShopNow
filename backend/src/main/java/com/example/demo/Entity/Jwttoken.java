@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 public class Jwttoken {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int token_id;
+	private int tokenId;
    
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -52,11 +52,11 @@ public class Jwttoken {
 
 
 	public int getToken_id() {
-		return token_id;
+		return tokenId;
 	}
 
 	public void setToken_id(int token_id) {
-		this.token_id = token_id;
+		this.tokenId = token_id;
 	}
 
 	public Users getUsers() {

@@ -139,4 +139,16 @@ public class AuthService {
 		.build()
 		.parseClaimsJws(token);
 	}
+	
+	
+	public void processingLogout(Users user , HttpServletResponse response) {
+		Cookie cookie = new Cookie("token", null);
+	    cookie.setHttpOnly(true);
+	    cookie.setSecure(false);
+	    cookie.setPath("/");
+	    cookie.setMaxAge(0);
+	    response.addCookie(cookie);
+	    
+	   jwtRepository.deleteByUsersUserId(user.getUser_id());
+	}
 }

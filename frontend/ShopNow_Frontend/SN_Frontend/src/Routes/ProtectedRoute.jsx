@@ -10,7 +10,11 @@ function ProtectedRoute({ children }) {
 
   useEffect(() => {
     //Call /auth/me ONLY if user is not already present
-    if (user) return;
+    console.log("ProtectedRoute useEffect triggered. User:", user);
+    if (user?.username) {
+      setLoading(false);
+      return;
+    }
 
     const restoreSession = async () => {
       try {
@@ -21,7 +25,9 @@ function ProtectedRoute({ children }) {
 
         //  keep user shape consistent
         setUser(res.data);
+        console.log("Session restored", res.data);
       } catch (error) {
+        console.error("Failed to restore session", error.response?.data || error.message);
         setUser(null);
       } finally {
         setLoading(false);

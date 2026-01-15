@@ -16,6 +16,7 @@ import com.example.demo.Dto.LoginRequest;
 import com.example.demo.Entity.Users;
 import com.example.demo.Services.AuthService;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -55,5 +56,16 @@ public class AuthController {
 			return ResponseEntity.ok(Map.of("username", users.getUsername() , "role", users.getRole()));
 		}
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
+	}
+	
+	@PostMapping("/logout")
+	public ResponseEntity<String> handleLogout(HttpServletResponse response, HttpServletRequest req) {
+		try {
+		Users users= (Users) req.getAttribute("Authorized_User");
+		authService.processingLogout(users, response);
+	    return ResponseEntity.status(HttpStatus.OK).body("Logout Successfull");
+		}catch (Exception e) {
+			 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Logout Failed");
+		}
 	}
 }

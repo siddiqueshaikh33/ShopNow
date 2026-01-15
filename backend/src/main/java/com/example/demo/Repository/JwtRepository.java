@@ -3,10 +3,13 @@ package com.example.demo.Repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.demo.Entity.Jwttoken;
+
+import jakarta.transaction.Transactional;
 
 public interface JwtRepository extends JpaRepository<Jwttoken, Integer>{
    
@@ -15,4 +18,9 @@ public interface JwtRepository extends JpaRepository<Jwttoken, Integer>{
 	
 	
 	Optional<Jwttoken> findByToken(@Param("token") String token);
+	
+	@Transactional
+	void deleteByUsersUserId(int userId);
+
+
 }

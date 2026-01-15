@@ -68,10 +68,10 @@ function Login() {
       {withCredentials: true}
     );
 
-    if (response.status === 200) {
+    if (response.data.message === "Login successful") {
       toast.success("Login Successful");
-      setUser(response.data.user);
-      console.log('Login successful:', response.data);
+      setUser(response.data);
+      console.log('Login successful:', response.data.username);
       navigate('/dashboard');
     } 
   } catch (error) {
