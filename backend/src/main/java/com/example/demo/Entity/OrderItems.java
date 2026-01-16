@@ -98,8 +98,4 @@ public class OrderItems {
 	public void setTotalPrice(BigDecimal totalPrice) {
 		this.totalPrice = totalPrice;
 	}
-
-	
-	
-	
 }

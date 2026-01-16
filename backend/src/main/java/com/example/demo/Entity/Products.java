@@ -3,14 +3,19 @@ package com.example.demo.Entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -42,6 +47,25 @@ public class Products {
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updated_at;
     
+    @OneToOne(
+    	    mappedBy = "products",
+    	    cascade = CascadeType.ALL,   // 👈 THIS is important
+    	    orphanRemoval = true,        // 👈 ensures cleanup
+    	    fetch = FetchType.LAZY
+    	)
+    private Productimages primaryImage;
+
+    
+
+
+	public Productimages getPrimaryImage() {
+		return primaryImage;
+	}
+
+	public void setPrimaryImage(Productimages primaryImage) {
+		this.primaryImage = primaryImage;
+	}
+
 	public Products() {
 		super();
 		// TODO Auto-generated constructor stub
