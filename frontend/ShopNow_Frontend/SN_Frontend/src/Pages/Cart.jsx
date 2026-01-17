@@ -133,7 +133,7 @@ const sendPaymentDetailsToServer = async (paymentResponse) => {
       if(verifyResponse.status === 200){
         // Payment verified on server, you can perform post-payment actions here
         console.log("Order completed:", verifyResponse.data);
-       navigate("/dashboard");
+       navigate("/vieworder");
       }
       // Optionally, you can clear the cart or redirect the user
       setCartItems([]);

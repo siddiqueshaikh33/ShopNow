@@ -27,18 +27,28 @@ function Order() {
   }, []);
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-100">
       <Navbar />
-
-      <div className="flex justify-around items-start mt-10 px-10 gap-10">
-
+       
+     
+      <div className="flex justify-around items-center mt-10 px-10 gap-10 sticky top-24 ">
+        
         {/* LEFT SIDE – THANK YOU MESSAGE */}
-        <div className="w-1/2">
-          <h1 className="text-2xl font-semibold text-green-600 mb-3">
+        <div className="w-1/2 ">
+           <button
+  className="px-6 py-3 rounded-lg
+             bg-green-600 text-white font-medium
+             hover:bg-green-700
+             transition"
+>
+  Continue Shopping
+</button>
+
+          <h1 className="text-5xl font-semibold text-green-600 mb-6">
             🎉 Thank You for Your Order!
           </h1>
 
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-lg p-4 bg-green-50 border border-green-500 rounded-lg">
             Your order has been placed successfully.
             We’ll notify you once your items are shipped.
           </p>
@@ -46,7 +56,7 @@ function Order() {
 
         {/* RIGHT SIDE – ORDER ITEM CARDS */}
         <div className="w-1/2">
-          <h2 className="text-xl font-medium mb-4">
+          <h2 className="text-2xl font-medium mb-4">
             🛒 Order Items
           </h2>
 
@@ -55,13 +65,17 @@ function Order() {
               {data.map((item) => (
                 <div
                   key={item.product_id}
-                  className="border rounded-lg p-4 shadow-md hover:shadow-lg transition flex gap-4 items-center bg-white"
+                   className="flex gap-4 items-center p-5 rounded-xl
+             bg-white border border-gray-100
+             shadow-md hover:shadow-lg
+             hover:-translate-y-0.5
+             transition-all duration-300  border border-gray-200 "
                 >
                   {/* PRODUCT IMAGE */}
                   <img
                     src={item.product_img}
                     alt={item.name}
-                    className="w-24 h-24 object-cover rounded-md m-6"
+                    className="w-30 h-24 object-cover rounded-md m-6"
                   />
 
                   {/* PRODUCT DETAILS */}
@@ -86,7 +100,7 @@ function Order() {
                       Total: ₹{item.total_price}
                     </p>
 
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-md text-gray-700 mt-1">
                       Order ID: {item.order_id}
                     </p>
                   </div>
@@ -99,7 +113,7 @@ function Order() {
         </div>
 
       </div>
-    </>
+    </div>
   );
 }
 
