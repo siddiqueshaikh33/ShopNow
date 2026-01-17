@@ -53,7 +53,6 @@ function Dashboard() {
   }, [user?.username]);
 
   const handleCardAction = async (product) => {
-    toast.error("Please login to add items to cart");
     if (!user?.username) return;
   
     const data = { username: user.username, product_id: product.product_id, quantity: 1 };

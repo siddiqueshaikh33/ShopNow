@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ProtectedRoute from "./Routes/ProtectedRoute";
+import Order from "./Pages/Order";
 
 function App() {
   
@@ -28,6 +29,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vieworder"
+          element={
+            <ProtectedRoute>
+              <Order />
             </ProtectedRoute>
           }
         />
