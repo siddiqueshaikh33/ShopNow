@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import axiosInstance from "../api/axiosInstance";
 import { SpinnerDotted } from "spinners-react";
 import { useNavigate } from "react-router-dom";
+import Footer from "../Components/Footer";
 
 function Cart() {
   const { user } = useContext(UserContext);
@@ -175,7 +176,7 @@ const sendPaymentDetailsToServer = async (paymentResponse) => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600 text-4xl flex font-semibold justify-center items-center h-48">
+              <p className="text-gray-600 text-4xl flex font-semibold justify-center items-center h-57">
                 Your cart is empty 🛒
               </p>
             )}
@@ -225,6 +226,7 @@ const sendPaymentDetailsToServer = async (paymentResponse) => {
           )}
         </div>
       </div>
+      <footer><Footer/></footer>
     </div>
   );
 }

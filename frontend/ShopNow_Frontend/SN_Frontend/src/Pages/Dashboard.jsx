@@ -10,6 +10,7 @@ import Pants from "../Assets/pants.jpg";
 import Phones from "../Assets/phones.jpg";
 import Accessories from "../Assets/accesiores.jpg";
 import MobileAccessories from "../Assets/Mobile_Accessiores.jpg";
+import Footer from "../Components/Footer";
 
 function Dashboard() {
   const [products, setProducts] = useState([]);
@@ -89,7 +90,7 @@ function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="bg-white shadow-md rounded-xl p-4 mb-4 ">
+          <div className="bg-white shadow-md rounded-xl p-4 mb-1 ">
             <h2 className="text-2xl font-bold mb-4">Get A Great Deal</h2>
             <div className="flex gap-7 overflow-x-auto py-2">
               {categories.map((cat) => (
@@ -108,11 +109,12 @@ function Dashboard() {
       </div>
 
       {/* Products Grid */}
-      <div className="flex flex-wrap justify-center gap-4 p-4">
+      <div className="flex flex-wrap justify-center gap-6 p-4">
         {loading
-          ? [...Array(8)].map((_, i) => <CardSkeleton key={i} />)
+          ? [...Array(15)].map((_, i) => <CardSkeleton key={i} />)
           : products.map((product) => <Card key={product.product_id} product={product} onAction={handleCardAction} />)}
       </div>
+      <footer><Footer /></footer>
     </div>
   );
 }

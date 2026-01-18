@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '../api/axiosInstance.js';
 import Navbar from '../Components/Navbar.jsx';
+import { useNavigate } from 'react-router-dom';
+
 
 function Order() {
   const [data, setData] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,12 +30,16 @@ function Order() {
     fetchData();
   }, []);
 
+  const handleNavigate = () => {
+    navigate("/dashboard");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
        
      
-      <div className="flex justify-around items-center mt-10 px-10 gap-10 sticky top-24 ">
+      <div className="flex justify-around items-start mt-10 px-10 gap-10 sticky top-24 ">
         
         {/* LEFT SIDE – THANK YOU MESSAGE */}
         <div className="w-1/2 ">
@@ -40,15 +48,17 @@ function Order() {
              bg-green-600 text-white font-medium
              hover:bg-green-700
              transition"
+
+             onClick={handleNavigate}
 >
   Continue Shopping
 </button>
 
-          <h1 className="text-5xl font-semibold text-green-600 mb-6">
+          <h1 className="text-5xl font-semibold text-green-600 mt-10">
             🎉 Thank You for Your Order!
           </h1>
 
-          <p className="text-gray-600 text-lg p-4 bg-green-50 border border-green-500 rounded-lg">
+          <p className="text-gray-600 text-lg p-4 bg-green-50 border border-green-500 rounded-lg mt-6">
             Your order has been placed successfully.
             We’ll notify you once your items are shipped.
           </p>
@@ -61,7 +71,7 @@ function Order() {
           </h2>
 
           {data.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 ">
+            <div className="grid grid-cols-1 gap-4 mb-4 ">
               {data.map((item) => (
                 <div
                   key={item.product_id}
@@ -75,7 +85,7 @@ function Order() {
                   <img
                     src={item.product_img}
                     alt={item.name}
-                    className="w-30 h-24 object-cover rounded-md m-6"
+                    className="w-30 h-25 object-cover rounded-md m-6"
                   />
 
                   {/* PRODUCT DETAILS */}
