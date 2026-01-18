@@ -5,11 +5,13 @@ import axiosInstance from '../api/axiosInstance';
 import { Link } from 'react-router-dom';
 import Typed from 'typed.js';
 import { UserContext } from '../Context/UserProvider';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
 
       const [Username, setUsername] = useState('');
       const [password, setPassword] = useState('');
+      const [showPassword, setShowPassword] = useState(false);
       const navigate = useNavigate();
       const {setUser} = useContext(UserContext);
       const el = useRef(null);
@@ -18,7 +20,15 @@ function Login() {
       useEffect(() => {
         const typed = new Typed(el.current, {
           strings: [
-`One step closer\n to becoming a part\n of <span class="bg-gradient-to-r from-sky-400 via-indigo-500 to-pink-500 bg-clip-text text-transparent font-extrabold">${name}</span>`
+`One step closer\n to becoming a part\n of <span class="bg-gradient-to-r from-[#FFFFFF] via-[#F1F5F9] to-[#FFFFFF] bg-clip-text text-transparent font-extrabold drop-shadow-md">${name}</span>
+
+
+
+
+
+
+
+`
           ],
           typeSpeed: 80,
           loop: true,
@@ -83,13 +93,19 @@ function Login() {
    }
     
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row items-center justify-center lg:justify-around px-4 lg:px-20 gap-8 bg-slate-900">
+    <div
+      className="min-h-screen w-full flex flex-col lg:flex-row 
+items-center justify-center lg:justify-around 
+px-4 lg:px-20 gap-8
+bg-gradient-to-r from-[#ADEFD1] via-[#7FD8BE] to-[#ADEFD1]
+bg-[length:400%_400%] animate-gradient"
+    >
 
       {/* Left Side - Typed Text */}
       <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[120px] sm:min-h-[200px] lg:min-h-[260px]">
         <span
           ref={el}
-          className="text-xl sm:text-3xl lg:text-6xl font-bold text-white whitespace-pre-line text-center lg:text-left"
+          className="text-xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
           style={{ fontFamily: "Inter, sans-serif" }}
         />
       </div>
@@ -103,9 +119,26 @@ function Login() {
           
           <label htmlFor="username" className='absolute top-2 left-7 pr-1 pl-1 bg-white text-black font-semibold'>Username</label>
           <input type="text" placeholder='Enter the Username' id="username" className='border p-3 rounded-md mb-4' onChange={(e) => setUsername(e.target.value)} />
-          <label htmlFor="password" className='absolute top-19 left-7 pr-1 pl-1 bg-white text-black font-semibold'>Password</label>
-          <input type="password" placeholder='Enter the Password' id="password" className='border p-3 rounded-md mb-4' onChange={(e) => setPassword(e.target.value)} />
-        
+         
+          <div className="flex flex-col gap-1 relative mb-2">
+        <label htmlFor="password" className="text-black absolute top-[-0.80rem]
+ left-2 pr-1 pl-1 bg-white font-semibold">
+          Password
+        </label>
+        <input
+          type= {showPassword ? "text" : "password"}
+          id="password"
+          placeholder="Enter the password"
+          className="border p-3 rounded-md pr-12"
+          required 
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          type="button"
+          className="absolute right-4 top-4 text-lg text-blue-600 font-bold" onClick={() => setShowPassword(!showPassword)}
+        > {showPassword ? <FaEye/> : <FaEyeSlash/>}
+        </button>
+      </div>
           <button type="submit" className='bg-blue-600  h-12 mt-1 rounded-xl font-semibold text-white text-xl hover:bg-blue-500'>Log In</button>
         </form>
         <p className="text-center p-2 text-md ">

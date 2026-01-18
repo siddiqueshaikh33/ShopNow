@@ -9,13 +9,21 @@ body {
 /* Medium soft animated background */
 
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(99,102,241,0.15), transparent 60%);
-  pointer-events: none;
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
+
+.animate-gradient {
+  animation: gradient 10s ease infinite;
+}
+
 
 
