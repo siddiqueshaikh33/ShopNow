@@ -20,15 +20,7 @@ function Login() {
       useEffect(() => {
         const typed = new Typed(el.current, {
           strings: [
-`One step closer\n to becoming a part\n of <span class="bg-gradient-to-r from-[#FFFFFF] via-[#F1F5F9] to-[#FFFFFF] bg-clip-text text-transparent font-extrabold drop-shadow-md">${name}</span>
-
-
-
-
-
-
-
-`
+`One step closer\n to becoming a part\n of <span class="bg-gradient-to-r from-[#FFFFFF] via-[#F1F5F9] to-[#FFFFFF] bg-clip-text text-transparent font-extrabold drop-shadow-md">${name}</span>`
           ],
           typeSpeed: 80,
           loop: true,
