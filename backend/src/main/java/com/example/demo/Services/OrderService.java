@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.Controllers.OrderController;
@@ -70,6 +71,14 @@ public class OrderService {
 		orderRepo.save(order);
 		return razorpayorder.get("id");
 	}
+	
+	@Scheduled(cron = "0 0 0 * * ?")	
+    public void handleOrderPendingDeletion() {
+    	 LocalDateTime sevenDayAgoDateTime = LocalDateTime.now().minusDays(7);
+    	 Status status = Status.PENDING;
+    	 int deletedCount = orderRepo.deletePendingStatus(status, sevenDayAgoDateTime);
+    	 System.out.println("Deleted " + deletedCount + " pending orders older than 7 days");
+    }
 
 	@Transactional
 	public boolean verifyOrder(String razorpayPaymentId, String razorpayOrderId, String razorpaySignature, Users user) {

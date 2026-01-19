@@ -27,11 +27,17 @@ function Navbar({count}) {
            }
     }
 
+    const handleDashboardNavigation = () => {
+      if(window.location.pathname !== '/dashboard') {
+        navigate('/dashboard');
+      }
+    }
+
   return (
     <nav className="sticky top-0 z-50">
     <div className="flex bg-[#ADEFD1] w-full pt-3 pb-3 px-4 lg:px-15 flex-row justify-between items-center">
         <div className="flex items-center">
-            <img src={logo} alt="Logo" className="w-12 h-12 rounded-full object-contain mr-2"/>
+            <img src={logo} alt="Logo" className="w-12 h-12 rounded-full object-contain mr-2" onClick={() => handleDashboardNavigation()}/>
             <p className="text-xl lg:text-3xl font-bold">ShopNow!</p>
         </div>
         <div className="flex items-center gap-6">
