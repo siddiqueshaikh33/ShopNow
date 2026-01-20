@@ -66,4 +66,6 @@ public class ProductController {
 			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
 		}
 	 }
+	 
+	 
 }

@@ -83,7 +83,7 @@ function Dashboard() {
         {loading ? (
           <div className="rounded-2xl bg-gray-100 shadow-md animate-pulse p-4">
             <div className="h-10 w-3/4 bg-gray-200 mb-4 mx-auto rounded"></div>
-            <div className="flex gap-4 overflow-x-auto">
+            <div className="flex gap-4 overflow-x-auto justify-center">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="h-24 w-24 bg-gray-200 rounded-full flex-shrink-0"></div>
               ))}
@@ -91,12 +91,12 @@ function Dashboard() {
           </div>
         ) : (
           <div className="bg-white shadow-md rounded-xl p-4 mb-1 ">
-            <h2 className="text-2xl font-bold mb-4">Get A Great Deal</h2>
-            <div className="flex gap-7 overflow-x-auto py-2">
+            <h2 className="text-2xl font-bold mb-4 flex justify-center">Get A Great Deal</h2>
+            <div className="flex gap-7 overflow-x-auto py-2 justify-center">
               {categories.map((cat) => (
                 <button
                   key={cat.name}
-                  className="flex flex-col items-center flex-shrink-0 text-center hover:scale-105 transform transition duration-300"
+                  className="flex flex-col justify-center items-center flex-shrink-0 text-center hover:scale-105 transform transition duration-300"
                   onClick={() => setCategoryName(cat.name)}
                 >
                   <img src={cat.img} alt={cat.name} className="h-24 w-24 rounded-full object-cover mb-1" />
