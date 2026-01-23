@@ -35,7 +35,11 @@ public class AuthFilter implements Filter {
 
     private static final String[] UNAUTHENTICATE_PATH = {
             "/api/users/register",
-            "/api/auth/login"
+            "/api/auth/login",
+            "/oauth2/authorization/google",
+            "/login/oauth2/code/google",
+            "/oauth2/**",
+            "/login/**"
     };
 
     public AuthFilter(UserRepository userRepository, AuthService authService) {

@@ -5,6 +5,7 @@ import Typed from "typed.js";
 import axiosInstance from "../api/axiosInstance";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 
 function Register() {
   const el = useRef(null);
@@ -220,6 +221,26 @@ bg-[length:400%_400%] animate-gradient"
             className="bg-blue-600  h-12 mt-1 rounded-xl font-semibold text-white text-xl hover:bg-blue-500"
           >
             Sign Up
+          </button>
+          <div className="flex items-center my-4 justify-center">
+            <p className="mx-2 font-semibold">Or</p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              (window.location.href =
+                "http://localhost:8080/oauth2/authorization/google")
+            }
+            className="flex items-center justify-center gap-3 
+             bg-white text-gray-700 
+             h-12 px-6 rounded-xl 
+             border border-gray-300 
+             shadow-sm hover:shadow-md 
+             transition-all duration-200 
+             font-medium text-lg"
+          >
+            <FcGoogle size={22} />
+            Continue with Google
           </button>
         </form>
         <p className="text-center mt-1 p-2 text-md">
