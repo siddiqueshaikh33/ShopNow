@@ -74,7 +74,12 @@ function Login() {
       toast.success("Login Successful");
       setUser(response.data);
       console.log('Login successful:', response.data.username);
-      navigate('/dashboard');
+      if(response.data.role === "ADMIN") {
+        navigate('/admindashboard');
+      } 
+      else  {
+        navigate('/dashboard');
+      }
     } 
   } catch (error) {
       console.error('Login error:', error);

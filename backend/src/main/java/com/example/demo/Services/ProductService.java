@@ -43,8 +43,8 @@ public class ProductService {
 	public List<Products> getProductsByCategoryId(String catergoryName) {
 		if(catergoryName != null && !catergoryName.isEmpty()) {
 			Categories categoryObject = getCategoryByCategoryName(catergoryName);
-			System.out.println("cat:" + productRepository.findByCategories_CategoryId(categoryObject.getCategory_id()));
-			return productRepository.findByCategories_CategoryId(categoryObject.getCategory_id());
+			System.out.println("cat:" + productRepository.findByCategories_CategoryId(categoryObject.getCategoryId()));
+			return productRepository.findByCategories_CategoryId(categoryObject.getCategoryId());
 		} else {
 		    return productRepository.findAll();
 		}

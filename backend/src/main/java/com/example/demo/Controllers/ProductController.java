@@ -52,7 +52,7 @@ public class ProductController {
 		    	Map<String, Object> productMap = new HashMap<>();
 		    	productMap.put("name", product.getName());
 		    	productMap.put("product_id", product.getProduct_id());
-		    	productMap.put("price", product.getPrices());
+		    	productMap.put("price", product.getPrice());
 		    	productMap.put("stock", product.getStock());
 		    	productMap.put("description", product.getDescription());
 		    	productMap.put("product_img", imageUrl);

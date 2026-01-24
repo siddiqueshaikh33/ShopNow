@@ -103,9 +103,9 @@ public class OrderService {
 					orderItems.setOrders(order);
 					orderItems.setProducts(item.getProduct());
 					orderItems.setQuantity(item.getQuantity());
-					orderItems.setPricePerUnit(item.getProduct().getPrices());
+					orderItems.setPricePerUnit(item.getProduct().getPrice());
 
-					BigDecimal totalPrice = item.getProduct().getPrices()
+					BigDecimal totalPrice = item.getProduct().getPrice()
 							.multiply(BigDecimal.valueOf(item.getQuantity()));
 					orderItems.setTotalPrice(totalPrice);
 

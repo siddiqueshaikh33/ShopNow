@@ -96,7 +96,7 @@ public class CartService {
 			
 			Map<String, Object> cartProductInfo = new HashMap<>();
 
-	        BigDecimal price = cartItem.getProduct().getPrices();
+	        BigDecimal price = cartItem.getProduct().getPrice();
 	        BigDecimal quantity = BigDecimal.valueOf(cartItem.getQuantity());
 	        BigDecimal totalPrice = price.multiply(quantity);
 	        

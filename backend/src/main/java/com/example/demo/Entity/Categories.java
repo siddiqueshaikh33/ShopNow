@@ -31,13 +31,18 @@ public class Categories {
 		// TODO Auto-generated constructor stub
 	}
 
-	public int getCategory_id() {
+	
+
+	
+	public int getCategoryId() {
 		return categoryId;
 	}
 
-	public void setCategory_id(int categoryId) {
-		this.categoryId= categoryId;
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
 	}
+
+
 
 	public String getCategory_name() {
 		return categoryName;

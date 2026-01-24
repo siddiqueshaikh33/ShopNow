@@ -114,7 +114,7 @@ function Dashboard() {
           ? [...Array(15)].map((_, i) => <CardSkeleton key={i} />)
           : products.map((product) => <Card key={product.product_id} product={product} onAction={handleCardAction} />)}
       </div>
-      <footer ><Footer /></footer>
+      <footer className="mt-30"><Footer /></footer>
     </div>
   );
 }

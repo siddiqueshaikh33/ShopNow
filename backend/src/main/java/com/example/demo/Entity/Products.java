@@ -3,7 +3,7 @@ package com.example.demo.Entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,8 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
@@ -31,8 +32,9 @@ public class Products {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
     
     @Column(nullable = false)
     private String stock;
@@ -55,7 +57,16 @@ public class Products {
     	)
     private Productimages primaryImage;
 
-    
+    @PrePersist
+    protected void onCreate() {
+        this.created_at = LocalDateTime.now();
+        this.updated_at = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updated_at = LocalDateTime.now();
+    }
 
 
 	public Productimages getPrimaryImage() {
@@ -71,12 +82,12 @@ public class Products {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Products(String name, String description, BigDecimal prices, String stock, Categories categories,
+	public Products(String name, String description, BigDecimal price, String stock, Categories categories,
 			LocalDateTime created_at, LocalDateTime updated_at) {
 		super();
 		this.name = name;
 		this.description = description;
-		this.price = prices;
+		this.price = price;
 		this.stock = stock;
 		this.categories = categories;
 		this.created_at = created_at;
@@ -114,12 +125,14 @@ public class Products {
 		this.description = description;
 	}
 
-	public BigDecimal getPrices() {
+	
+
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public void setPrices(BigDecimal prices) {
-		this.price = prices;
+	public void setPrice(BigDecimal price) {
+		this.price = price;
 	}
 
 	public String getStock() {
@@ -153,6 +166,5 @@ public class Products {
 	public void setUpdated_at(LocalDateTime updated_at) {
 		this.updated_at = updated_at;
 	}
-      
-    
+  
 }

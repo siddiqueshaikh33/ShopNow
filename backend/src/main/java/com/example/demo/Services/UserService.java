@@ -5,6 +5,7 @@ package com.example.demo.Services;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Entity.Provider;
 import com.example.demo.Entity.Users;
 import com.example.demo.Repository.UserRepository;
 
@@ -27,6 +28,8 @@ public class UserService {
 		 if(userRepository.findByUsername(user.getUsername()).isPresent()) {
 			 throw new RuntimeException("Username is already taken");
 		 } 
+		 
+		user.setProvider(Provider.LOCAL);
 		return  userRepository.save(user); 
 	}
 }

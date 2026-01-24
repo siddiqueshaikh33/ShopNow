@@ -33,14 +33,7 @@ public class AuthFilter implements Filter {
     private final UserRepository userRepository;
     private final AuthService authService;
 
-    private static final String[] UNAUTHENTICATE_PATH = {
-            "/api/users/register",
-            "/api/auth/login",
-            "/oauth2/authorization/google",
-            "/login/oauth2/code/google",
-            "/oauth2/**",
-            "/login/**"
-    };
+   
 
     public AuthFilter(UserRepository userRepository, AuthService authService) {
         super();
@@ -72,11 +65,17 @@ public class AuthFilter implements Filter {
         LOGGER.info("Incoming request URI: {}", req_url);
         LOGGER.info("HTTP Method: {}", req.getMethod());
 
-        if (Arrays.asList(UNAUTHENTICATE_PATH).contains(req_url)) {
-            LOGGER.info("Unauthenticated path accessed: {}", req_url);
-            chain.doFilter(request, response);
-            return;
-        }
+        if (
+        	    req_url.startsWith("/oauth2") ||
+        	    req_url.startsWith("/login/oauth2") ||
+        	    req_url.equals("/api/auth/login") ||
+        	    req_url.equals("/api/users/register") ||
+        	    req_url.equals("/admin/login")
+        	) {
+        	    chain.doFilter(request, response);
+        	    return;
+        	}
+
 
         if (req.getMethod().equalsIgnoreCase("OPTIONS")) {
             LOGGER.info("OPTIONS request detected, setting CORS headers");

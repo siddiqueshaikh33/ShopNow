@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ProtectedRoute from "./Routes/ProtectedRoute";
 import Order from "./Pages/Order";
+import AdminDashboard from "./Pages/AdminDashboard";
 
 function App() {
   
@@ -37,6 +38,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Order />
+            </ProtectedRoute>
+          }
+        />
+          <Route
+          path="/admindashboard"
+          element={
+            <ProtectedRoute>
+             <AdminDashboard />
             </ProtectedRoute>
           }
         />

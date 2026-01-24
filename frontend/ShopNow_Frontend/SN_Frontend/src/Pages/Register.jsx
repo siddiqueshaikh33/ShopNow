@@ -6,6 +6,7 @@ import axiosInstance from "../api/axiosInstance";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import Logo from "../Assets/logo.jpg";
 
 function Register() {
   const el = useRef(null);
@@ -129,22 +130,23 @@ function Register() {
 items-center justify-center lg:justify-around 
 px-4 lg:px-20 gap-8
 bg-gradient-to-r from-[#ADEFD1] via-[#7FD8BE] to-[#ADEFD1]
-bg-[length:400%_400%] animate-gradient"
+bg-[length:400%_400%] animate-gradient" 
     >
-      {/* Left Side - Typed Text */}
       <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[120px] sm:min-h-[200px] lg:min-h-[260px]">
+    
         <span
           ref={el}
           className="text-xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
           style={{ fontFamily: "Inter, sans-serif" }}
         />
       </div>
+     
 
       {/* Right Side - Register Form */}
       <div className="w-full sm:w-[380px] bg-white rounded-xl shadow-xl p-2 lg:p-2 lg:pt-4">
         <h2 className="text-3xl font-bold text-center mb-4">Register</h2>
         <form
-          className="flex flex-col bg-white p-5 lg:p-5 pb-2 w-auto lg:w-92 relative"
+          className="flex flex-col bg-white p-2 lg:p-5 pb-2 w-auto lg:w-92 relative"
           onSubmit={(e) => {
             registerUser(e);
           }}
@@ -214,7 +216,6 @@ bg-[length:400%_400%] animate-gradient"
             onChange={(e) => setRole(e.target.value)}
           >
             <option value="CUSTOMER">Customer</option>
-            <option value="ADMIN">Admin</option>
           </select>
           <button
             type="submit"
@@ -223,7 +224,7 @@ bg-[length:400%_400%] animate-gradient"
             Sign Up
           </button>
           <div className="flex items-center my-4 justify-center">
-            <p className="mx-2 font-semibold">Or</p>
+            <p className="mx-2 font-semibold text-gray-500">OR</p>
           </div>
           <button
             type="button"
