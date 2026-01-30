@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +32,8 @@ public class AdminDeleteController {
 		this.productRepository = productRepository;
 	}
     
-	@GetMapping("/product")
-	private ResponseEntity<?> findProduct(@RequestParam("productId") int productId, HttpServletRequest request) {
+	@GetMapping("/product/{productId}")
+	private ResponseEntity<?> findProduct(@PathVariable int productId, HttpServletRequest request) {
 		try {
 		Users users = (Users) request.getAttribute("Authorized_User");
 		
@@ -50,8 +51,8 @@ public class AdminDeleteController {
 	}
 	}
    
-	@DeleteMapping("/deleteproduct")
-	private ResponseEntity<?> deleteProduct(@RequestParam("productId") int productId, HttpServletRequest request) {
+	@DeleteMapping("/deleteproduct/{productId}")
+	private ResponseEntity<?> deleteProduct(@PathVariable int productId, HttpServletRequest request) {
 		try {
 		Users users = (Users) request.getAttribute("Authorized_User");
 		

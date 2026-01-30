@@ -35,22 +35,15 @@ public class AdminAddProductController {
     private static final Logger log =
             LoggerFactory.getLogger(AdminAddProductController.class);
 
-    
-   
-
-
     public AdminAddProductController(ProductRepository productRepository, CategoriesRepository categoriesRepository) {
         this.productRepository = productRepository;
         this.categoriesRepository = categoriesRepository;
     }
 
-    
     @PostMapping("/addProduct")
     public ResponseEntity<?> addProduct(@RequestBody AddProductDto productDto, HttpServletRequest request) {
-        
     	 log.info("Add product request received: {}", productDto);
    
-
         try {
             Users users = (Users) request.getAttribute("Authorized_User");
             
