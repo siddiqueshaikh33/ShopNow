@@ -21,8 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin( origins = "http://localhost:5173",
-allowCredentials = "true")
+@CrossOrigin( origins = "http://localhost:5173",allowCredentials = "true")
 public class ProductController {
      private ProductService productService;
 
@@ -30,6 +29,8 @@ public class ProductController {
 		super();
 		this.productService = productService;
 	 }
+	 
+	 
      
 	 @GetMapping
 	 public ResponseEntity<Map<String, Object>> fetchProduct(@RequestParam(required = false) String categoryName,

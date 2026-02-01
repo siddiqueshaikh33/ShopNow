@@ -19,7 +19,7 @@ function ProtectedRoute({ children }) {
     const restoreSession = async () => {
       try {
         setLoading(true);
-        const res = await axiosInstance.get("/auth/me", {
+        const res = await axiosInstance.get("/find/me", {
           withCredentials: true,
         });
 

@@ -12,6 +12,7 @@ import Accessories from "../Assets/accesiores.jpg";
 import MobileAccessories from "../Assets/Mobile_Accessiores.jpg";
 import Footer from "../Components/Footer";
 
+
 function Dashboard() {
   const [products, setProducts] = useState([]);
   const { user } = useContext(UserContext);
@@ -55,7 +56,7 @@ function Dashboard() {
 
   const handleCardAction = async (product) => {
     if (!user?.username) return;
-  
+   console.log("Adding to cart:", product);
     const data = { username: user.username, product_id: product.product_id, quantity: 1 };
     try {
       const response = await axiosInstance.post("/cart/add", data, { withCredentials: true });

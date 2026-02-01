@@ -29,7 +29,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @CrossOrigin(originPatterns = "http://localhost:5173" , allowCredentials = "true")
-@RequestMapping("/api/cart/")
+@RequestMapping("/api/cart")
 public class CartController {
 	
 	 private static final Logger LOGGER = LoggerFactory.getLogger(CartController.class);
@@ -43,7 +43,7 @@ public class CartController {
 	}
 
 	
-	@PostMapping("add")
+	@PostMapping("/add")
 	public ResponseEntity<?> addCartItems(@RequestBody AddCartDto addCart) {
 		try {
 			LOGGER.error("running....");
@@ -51,12 +51,12 @@ public class CartController {
 		 return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("count", count));
 		} catch (Exception e) {
 			LOGGER.error("errrorr.........");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "ERRORR CART ADD"));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		}
 	}
 	
 	
-	@GetMapping("count")
+	@GetMapping("/count")
 	public ResponseEntity<?> getCartCount(@RequestParam String username) {
 		try {
 			LOGGER.error("error ohhh ji error");
@@ -68,7 +68,7 @@ public class CartController {
 		}
 	}
     
-	@GetMapping("getitems")
+	@GetMapping("/getitems")
 	public ResponseEntity<Map<String, Object>> fetch(HttpServletRequest req) {
 		Users user = (Users) req.getAttribute("Authorized_User");
 		if(user == null) {
@@ -79,14 +79,14 @@ public class CartController {
 		return ResponseEntity.ok(allCartItems);	
 	}
 	
-	@PutMapping("update")
+	@PutMapping("/update")
 	public ResponseEntity<Void> update(HttpServletRequest req, @RequestParam int productId, @RequestParam int quantity) {
 		Users user = (Users) req.getAttribute("Authorized_User");
 	   cartService.updateCartItem(user.getUser_id(), productId, quantity);
 	   return ResponseEntity.ok().build();
 	}
 	
-	@DeleteMapping("delete")
+	@DeleteMapping("/delete")
 	public ResponseEntity<Void> deleteCartItem(HttpServletRequest request, @RequestParam int productId) {
 		try {
 		Users user = (Users) request.getAttribute("Authorized_User");

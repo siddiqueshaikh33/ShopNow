@@ -29,9 +29,15 @@ public interface OrderRepo extends JpaRepository<Orders, String>{
 			        @Param("userId") int userId);
 	
 	
-	       
 	       @Modifying
 	       @Transactional
 	       @Query("delete from Orders o where o.status = :status and o.created_at < :dueDateTime")
 	       int deletePendingStatus(@Param("status") Status status, @Param("dueDateTime") LocalDateTime dueDateTime);
+	       
+	       
+	       
+	       @Query("select o from Orders o where Month(o.created_at) = :month and Year(o.created_at) = :year and o.status = SUCCESS")
+	       List<Orders> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
+	       
+	       
 }

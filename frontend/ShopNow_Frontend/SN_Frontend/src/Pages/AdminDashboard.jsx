@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import Footer from "../Components/Footer";
 
+
 function AdminDashboard() {
   const [activePopup, setActivePopup] = useState(null);
 
@@ -96,6 +97,74 @@ function AdminDashboard() {
       setProduct(null);
     }
   };
+
+  // Modify User Details states
+  const [userId, setUserId] = useState("");
+  const [Username, setUsername] = useState("");
+  const [Email, setEmail] = useState("");
+  const [Role, setRole] = useState("");
+  const [AuthProvider, setAuthProvider] = useState("");
+
+
+  const fetchUser = async (e) => {
+    e.preventDefault();
+    try{
+    const response = await axios.get(`http://localhost:8080/admin/getDetails/${userId}`, { withCredentials: true });
+     setUsername(response.data.username);
+     setEmail(response.data.email);
+     setRole(response.data.role);
+     setAuthProvider(response.data.provider);
+      console.log("User fetched successfully:", response.data);
+      toast.success("User fetched successfully");
+    } catch (error) {
+      toast.error(error.response?.data || "Failed to fetch user or User not found");
+      console.error("Error fetching user:", error);
+    }
+  };
+
+ const handleUserForm = async (e) => {
+  e.preventDefault();
+
+  try {
+    const updatedUserData = {
+      username: Username,
+      email: Email,
+      role: Role,
+    };
+
+    const response = await axios.put(
+      `http://localhost:8080/admin/updateUser/${userId}`,
+      updatedUserData,
+      { withCredentials: true }
+    );
+
+    console.log("User updated successfully:", response.data);
+    toast.success("User updated successfully");
+    closePopup();
+  } catch (error) {
+    console.error("Error updating user:", error);
+    toast.error(error.response?.data || "Failed to update user");
+  }
+};
+
+// Monthly Business states
+
+const [month, setMonth] = useState("");
+const [year, setYear] = useState("");
+
+const handleMBusinessForm = async (e) => {
+  e.preventDefault();
+
+  try {
+  
+    toast.success("Monthly business data fetched successfully");
+    closePopup();
+  }
+    catch (error) {
+    console.error("Error fetching monthly business data:", error);
+    toast.error("Failed to fetch monthly business data");
+  }
+};
   return (
     <div>
       <Navbar />
@@ -119,10 +188,10 @@ function AdminDashboard() {
 
         {/* 3) View Orders */}
         <DashboardCard
-          buttonText="View Orders"
-          title="Manage Customer Orders"
-          subtitle="Activity : Order Management"
-          onClick={() => setActivePopup("VIEW_ORDERS")}
+          buttonText="Modify User Details"
+          title="View and Manage User"
+          subtitle="Activity : User Management"
+          onClick={() => setActivePopup("MODIFY_USER_DETAILS")}
         />
 
         {/* 4) Manage Users */}
@@ -135,10 +204,10 @@ function AdminDashboard() {
 
         {/* 5) Stock Update */}
         <DashboardCard
-          buttonText="Update Stock"
-          title="Update Inventory Stock"
-          subtitle="Activity : Inventory Management"
-          onClick={() => setActivePopup("UPDATE_STOCK")}
+          buttonText="Monthly Business"
+          title="Monthly Business Overview"
+          subtitle="Activity : Analytics"
+          onClick={() => setActivePopup("MONTHLY_BUSINESS")}
         />
 
         {/* 6) Reports */}
@@ -240,11 +309,102 @@ function AdminDashboard() {
         </PopupModal>
       )}
 
-      {/* Popup 3: View Orders */}
-      {activePopup === "VIEW_ORDERS" && (
-        <PopupModal title="Orders" onClose={closePopup}>
-          <p className="text-gray-600">Orders table/list here...</p>
-        </PopupModal>
+      
+      {activePopup === "MODIFY_USER_DETAILS" && (
+        <PopupModal title="View and Manage User" onClose={closePopup}>
+          <div className="flex  items-center justify-center">
+           <label htmlFor="userId">User Id:</label>
+           <input type="text" name="userId" id="userId" className="border p-2 ml-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" value={userId} onChange={(e) => setUserId(e.target.value)} />
+           <button className="bg-green-500 hover:bg-green-400 p-2 ml-4 rounded w-20 text-white" onClick={(e) => fetchUser(e)}>Fetch</button>
+           </div>
+          <p className="text-red-500 font-semibold mt-2">* Data fetched will appear here</p>
+            <form className="mt-4 space-y-4 relative" onSubmit={handleUserForm}>
+              <label htmlFor="username" className="absolute top-[-14px] left-2 bg-white px-1 font-semibold">Username </label>
+              <input
+              type="text"
+              id="username"
+              placeholder="Enter Username"
+              value={Username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+             <label htmlFor="email" className="absolute top-13 left-2 bg-white px-1 font-semibold">Email </label>
+            <input
+              type="text"
+              id="email"
+              placeholder="Enter Email"
+              value={Email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <label htmlFor="role" className="absolute top-30 left-2 bg-white px-1 font-semibold">Role </label>
+            <input
+              type="text"
+              id="role"
+              placeholder="Enter Role"
+              value={Role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <label htmlFor="authProvider" className="absolute top-46 left-2 bg-white px-1 font-semibold">Auth Provider </label>
+            <input
+              type="text"
+              id="authProvider"
+              disabled={true}
+              placeholder="Enter Auth Provider"
+              value={AuthProvider}
+              onChange={(e) => setAuthProvider(e.target.value)}
+              className="w-full border border-gray-300 px-3 py-3  rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex gap-3 pt-2 justify-end">
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ease-in-out"
+              >
+                Submit
+              </button>
+            </div>
+            </form>
+        </PopupModal>    
+      )}
+
+       {activePopup === "MONTHLY_BUSINESS" && (
+        <PopupModal title="Monthly Business" onClose={closePopup}>
+            <form className="flex flex-col mt-4 space-y-4 relative" onSubmit={handleMBusinessForm}>
+             <label htmlFor="month" className="absolute top-[-14px] left-2 bg-white px-1 font-semibold">Month </label>
+            <input
+              type="number"
+              id="month"  
+              placeholder="Enter Month"
+              className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              min={1}
+              max={12}
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+            />
+            <label htmlFor="year" className="absolute top-13 left-2 bg-white px-1 font-semibold">Year </label>
+            <input
+              type="number"
+              id="year"
+              placeholder="Enter Year"
+              className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              min={2000}
+              max={2100}
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+            />
+            <div className="flex gap-3 pt-2 justify-end">
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ease-in-out"
+              >
+                Submit
+              </button>
+            </div>
+            </form>
+        </PopupModal>    
       )}
 
       <div>

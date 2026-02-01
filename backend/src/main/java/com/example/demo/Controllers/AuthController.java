@@ -48,15 +48,7 @@ public class AuthController {
 		}
 	}
 	
-	@GetMapping("/me")
-	public ResponseEntity<?> getUser(HttpServletRequest req) {
-		Users users = (Users) req.getAttribute("Authorized_User");
-		if(users != null) {
-			System.out.println("user" + users.getUsername() + "pass" + users.getPassword());
-			return ResponseEntity.ok(Map.of("username", users.getUsername() , "role", users.getRole()));
-		}
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
-	}
+	
 	
 	@PostMapping("/logout")
 	public ResponseEntity<String> handleLogout(HttpServletResponse response, HttpServletRequest req) {

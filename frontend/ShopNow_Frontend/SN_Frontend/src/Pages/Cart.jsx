@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, use } from "react";
+import { useState, useEffect, useContext} from "react";
 import Navbar from "../Components/Navbar";
 import { UserContext } from "../Context/UserProvider";
 import CartItems from "../Components/CartItems";
@@ -152,7 +152,6 @@ const sendPaymentDetailsToServer = async (paymentResponse) => {
         <h1 className="text-5xl font-bold mb-7">Shopping Cart</h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* LEFT */}
           <div className="flex-1">
             {loading ? (
              <div className="h-screen flex items-center justify-center">
