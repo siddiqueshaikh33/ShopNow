@@ -2,13 +2,14 @@ package com.example.demo.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.example.demo.Dto.CountTotalCatgorySalesDto;
 import com.example.demo.Entity.Orders;
 import com.example.demo.Entity.Status;
 
@@ -36,8 +37,39 @@ public interface OrderRepo extends JpaRepository<Orders, String>{
 	       
 	       
 	       
-	       @Query("select o from Orders o where Month(o.created_at) = :month and Year(o.created_at) = :year and o.status = SUCCESS")
-	       List<Orders> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
+	       @Query("""
+	    		    select coalesce(sum(o.total_amount), 0)
+	    		    from Orders o
+	    		    where month(o.created_at) = :month
+	    		      and year(o.created_at) = :year
+	    		      and o.status = :status
+	    		""")
+	    		Double sumTotalAmountByMonthAndYear(@Param("month") int month,
+	    		                                   @Param("year") long year,
+	    		                                   @Param("status") Status status);
+
+	
+	       
+	       @Query("""
+	    		    select new com.example.demo.Dto.CountTotalCatgorySalesDto(
+	    		       p.categories.categoryName,
+	    		        count(distinct o.id)
+	    		    )
+	    		    from Orders o
+	    		    join o.orderItems oi
+	    		    join oi.products p
+	    		    where month(o.created_at) = :month
+	    		      and year(o.created_at) = :year
+	    		      and o.status = :status
+	    		    group by p.categories.categoryId, p.categories.categoryName
+	    		""")
+	    		List<CountTotalCatgorySalesDto> countOrdersPerCategory(
+	    		    @Param("month") int month,
+	    		    @Param("year") long year,
+	    		    @Param("status") Status status
+	    		);
+
+
 	       
 	       
 }

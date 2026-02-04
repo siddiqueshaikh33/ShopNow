@@ -5,6 +5,8 @@ import PopupModal from "../Components/PopupModal";
 import { toast } from "react-toastify";
 import axios from "axios";
 import Footer from "../Components/Footer";
+import { PieChart, Pie, Tooltip, Legend, Cell } from "recharts";
+
 
 
 function AdminDashboard() {
@@ -151,20 +153,35 @@ function AdminDashboard() {
 
 const [month, setMonth] = useState("");
 const [year, setYear] = useState("");
+const [totalAmount, setTotalAmount] = useState(0);
+const [categoryData, setCategoryData] = useState([]);
+const [showMonthlyChart, setShowMonthlyChart] = useState(false);
+
+const COLORS = ["#1D4ED8", "#16A34A", "#D97706", "#DC2626", "#0F766E"];
+
 
 const handleMBusinessForm = async (e) => {
   e.preventDefault();
 
   try {
-  
+    const response = await axios.get("http://localhost:8080/admin/analytics/month", {
+      params: { month: parseInt(month), year: parseInt(year) },
+      withCredentials: true,
+    });
+
     toast.success("Monthly business data fetched successfully");
-    closePopup();
-  }
-    catch (error) {
+
+    setCategoryData(response.data.category_sales_count);
+    setTotalAmount(response.data.total_amount);
+
+    setShowMonthlyChart(true); // ✅ show pie chart in popup (replace form)
+  } catch (error) {
     console.error("Error fetching monthly business data:", error);
     toast.error("Failed to fetch monthly business data");
   }
 };
+
+
   return (
     <div>
       <Navbar />
@@ -221,7 +238,15 @@ const handleMBusinessForm = async (e) => {
 
       {/* Popup 1: Add Product */}
       {activePopup === "ADD_PRODUCT" && (
-        <PopupModal title="Add Product" onClose={closePopup}>
+        <PopupModal title="Add Product" onClose={() => {
+            closePopup(),
+            setName(""),
+            setDescription(""),
+            setPrice(""),   
+            setStock(""),
+            setCategoryId(""),
+            setImageUrl("")
+          }}>
           <form onSubmit={handleSubmit} className="space-y-3">
             <input
               type="text"
@@ -286,7 +311,11 @@ const handleMBusinessForm = async (e) => {
 
       {/* Popup 2: Delete Product */}
       {activePopup === "DELETE_PRODUCT" && (
-        <PopupModal title="Delete Product" onClose={closePopup}>
+        <PopupModal title="Delete Product" onClose={() => {
+          closePopup(),
+          setProductId(""),
+          setProduct(null);
+        }}>
            <form onSubmit={handleFormDeletion} className="space-y-3">
 
             <div className="flex gap-3 pt-2 justify-center">
@@ -311,7 +340,14 @@ const handleMBusinessForm = async (e) => {
 
       
       {activePopup === "MODIFY_USER_DETAILS" && (
-        <PopupModal title="View and Manage User" onClose={closePopup}>
+        <PopupModal title="View and Manage User" onClose={() => {
+          closePopup()
+          setUserId(""),
+          setUsername(""),
+          setEmail(""),
+          setRole(""),
+          setAuthProvider("")
+        }}>
           <div className="flex  items-center justify-center">
            <label htmlFor="userId">User Id:</label>
            <input type="text" name="userId" id="userId" className="border p-2 ml-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" value={userId} onChange={(e) => setUserId(e.target.value)} />
@@ -371,41 +407,104 @@ const handleMBusinessForm = async (e) => {
       )}
 
        {activePopup === "MONTHLY_BUSINESS" && (
-        <PopupModal title="Monthly Business" onClose={closePopup}>
-            <form className="flex flex-col mt-4 space-y-4 relative" onSubmit={handleMBusinessForm}>
-             <label htmlFor="month" className="absolute top-[-14px] left-2 bg-white px-1 font-semibold">Month </label>
-            <input
-              type="number"
-              id="month"  
-              placeholder="Enter Month"
-              className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min={1}
-              max={12}
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            />
-            <label htmlFor="year" className="absolute top-13 left-2 bg-white px-1 font-semibold">Year </label>
-            <input
-              type="number"
-              id="year"
-              placeholder="Enter Year"
-              className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min={2000}
-              max={2100}
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            />
-            <div className="flex gap-3 pt-2 justify-end">
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ease-in-out"
-              >
-                Submit
-              </button>
-            </div>
-            </form>
-        </PopupModal>    
-      )}
+  <PopupModal
+    title="Monthly Business"
+    onClose={() => {
+      closePopup();
+      setMonth("");
+      setYear("");
+      setTotalAmount(0);
+      setCategoryData([]);
+      setShowMonthlyChart(false);
+    }}
+  >
+    {!showMonthlyChart ? (
+      <form
+        className="flex flex-col mt-4 space-y-4 relative"
+        onSubmit={handleMBusinessForm}
+      >
+        <label
+          htmlFor="month"
+          className="absolute top-[-14px] left-2 bg-white px-1 font-semibold"
+        >
+          Month
+        </label>
+
+        <input
+          type="number"
+          id="month"
+          placeholder="Enter Month"
+          className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          min={1}
+          max={12}
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+        />
+
+        <label
+          htmlFor="year"
+          className="absolute top-13 left-2 bg-white px-1 font-semibold"
+        >
+          Year
+        </label>
+
+        <input
+          type="number"
+          id="year"
+          placeholder="Enter Year"
+          className="w-full border border-gray-300 px-3 py-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          min={2000}
+          max={2100}
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+        />
+
+        <div className="flex gap-3 pt-2 justify-end">
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ease-in-out"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    ) : (
+      <div className="mt-4 flex flex-col items-center">
+        <h2 className="text-lg font-bold mb-2">Category Sales Count</h2>
+
+        <p className="font-semibold mb-4">
+          Total Amount: ₹{totalAmount}
+        </p>
+
+        <PieChart width={400} height={300}>
+          <Pie
+            data={categoryData.map((item) => ({
+              name: item.category,
+              value: item.categoryCount,
+            }))}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            label
+          >
+            {categoryData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </div>
+    )}
+  </PopupModal>
+)}
+
 
       <div>
       <Footer />

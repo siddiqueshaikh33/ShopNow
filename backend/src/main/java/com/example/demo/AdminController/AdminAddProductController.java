@@ -44,6 +44,7 @@ public class AdminAddProductController {
     	 log.info("Add product request received: {}", productDto);
    
         try {
+        	
             Users users = (Users) request.getAttribute("Authorized_User");
             
              if(users == null || !(users.getRole() == Role.ADMIN)) {
