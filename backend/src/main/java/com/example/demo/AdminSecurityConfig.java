@@ -31,6 +31,7 @@ public class AdminSecurityConfig {
 
 	        http
 	            .securityMatcher("/admin/**")
+	            .securityMatcher("/api/find/me")
 	            .csrf(csrf -> csrf.disable())
 	            .cors(cors -> {})
 	            .authorizeHttpRequests(auth -> auth

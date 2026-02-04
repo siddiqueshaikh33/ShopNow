@@ -3,6 +3,9 @@ package com.example.demo.Controllers;
 
 
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Dto.LoginRequest;
 import com.example.demo.Entity.Users;
+import com.example.demo.Filter.AuthFilter;
 import com.example.demo.Services.AuthService;
 
 import jakarta.servlet.http.Cookie;
@@ -24,7 +28,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/auth")
 public class AuthController {
-
+    
+	private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 	private AuthService authService;
 
 	public AuthController(AuthService authService) {
@@ -39,7 +44,8 @@ public class AuthController {
 		
 		String tokenString = authService.validateCookie(users);
 		authService.addCookietoClient(res, tokenString);
-			
+		
+		LOGGER.info("working fine");
 		return ResponseEntity.ok(Map.of("username", users.getUsername() ,"role", users.getRole(),"message", "Login successful"));
 			
 		} catch (Exception e) {
@@ -53,10 +59,13 @@ public class AuthController {
 	@PostMapping("/logout")
 	public ResponseEntity<String> handleLogout(HttpServletResponse response, HttpServletRequest req) {
 		try {
+			
 		Users users= (Users) req.getAttribute("Authorized_User");
 		authService.processingLogout(users, response);
 	    return ResponseEntity.status(HttpStatus.OK).body("Logout Successfull");
+	    
 		}catch (Exception e) {
+			
 			 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Logout Failed");
 		}
 	}

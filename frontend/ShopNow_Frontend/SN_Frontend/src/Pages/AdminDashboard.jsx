@@ -5,6 +5,8 @@ import PopupModal from "../Components/PopupModal";
 import { toast } from "react-toastify";
 import axios from "axios";
 import Footer from "../Components/Footer";
+import logo from "../Assets/logo.jpg";
+
 import {
   PieChart,
   Pie,
@@ -233,7 +235,15 @@ function AdminDashboard() {
 
   return (
     <div>
-      <Navbar />
+    <Navbar
+        count={0}
+        logoSrc={logo}
+        title="ShopNow!"
+        bgColor="#ADEFD1"
+        showCart={false}
+        showProfile={true}
+        dashboardPath="/admindashboard"
+      />
       <h1 className="font-bold text-3xl m-6 ml-10">Admin Dashboard</h1>
       <div className="admin-dashboard-container grid grid-cols-2 gap-4 m-10 flex flex-wrap justify-center">
         {/* 1) Add Product */}

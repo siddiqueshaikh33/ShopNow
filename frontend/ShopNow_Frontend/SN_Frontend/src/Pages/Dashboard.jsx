@@ -11,7 +11,7 @@ import Phones from "../Assets/phones.jpg";
 import Accessories from "../Assets/accesiores.jpg";
 import MobileAccessories from "../Assets/Mobile_Accessiores.jpg";
 import Footer from "../Components/Footer";
-
+import logo from "../Assets/logo.jpg";
 
 function Dashboard() {
   const [products, setProducts] = useState([]);
@@ -77,7 +77,12 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-100">
-      <Navbar count={count} setCount={setCount} />
+         <Navbar
+        count={count}
+        logoSrc={logo}
+        title="ShopNow!"
+        bgColor="#ADEFD1"
+      />
 
       {/* Category Banner */}
       <div className="p-4">

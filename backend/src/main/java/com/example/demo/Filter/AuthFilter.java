@@ -47,7 +47,7 @@ public class AuthFilter extends OncePerRequestFilter {
         // ✅ skip public routes
         if (reqUrl.startsWith("/oauth2") ||
             reqUrl.startsWith("/login/oauth2") ||
-            reqUrl.startsWith("/api/auth") ||
+            reqUrl.startsWith("/api/auth/login") ||
             reqUrl.startsWith("/api/users")) {
             chain.doFilter(req, resp);
             return;
