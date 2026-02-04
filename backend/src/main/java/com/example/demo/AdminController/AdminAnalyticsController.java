@@ -34,7 +34,7 @@ public class AdminAnalyticsController {
 		this.adminAnalyticsService = adminAnalyticsService;
 	}
 	
-	@GetMapping("/analytics")
+	@GetMapping("/analytics/month")
 	public ResponseEntity<Map<String, Object>> getAnalyticsDataByService(@Param("month") int month, @Param("year") long year, HttpServletRequest request) {
 		log.info("i am running");
 		try {
@@ -52,4 +52,21 @@ public class AdminAnalyticsController {
 	}
 	
 	
+	@GetMapping("/analytics/year")
+	public ResponseEntity<Map<String, Object>> getyearDayAnalytics(@Param("year") long year, HttpServletRequest request) {
+		try {
+			log.info("i am running");
+			Users users = (Users) request.getAttribute("Authorized_User");
+			
+            if(users == null || !(users.getRole() == Role.ADMIN)) {
+           	 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Unauthorized User"));
+            }
+            
+            Map<String, Object> resultMap = adminAnalyticsService.getYearBusiness(year);
+            return ResponseEntity.ok().body(resultMap);
+     
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
 }

@@ -8,14 +8,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import com.example.demo.Dto.CountTotalCatgorySalesDto;
+import com.example.demo.Dto.YearlyBusinessDto;
 import com.example.demo.Entity.Orders;
 import com.example.demo.Entity.Status;
 
 import jakarta.transaction.Transactional;
 
 public interface OrderRepo extends JpaRepository<Orders, String>{
+	
 	@Query("""
 			SELECT DISTINCT o
 			FROM Orders o
@@ -70,6 +71,25 @@ public interface OrderRepo extends JpaRepository<Orders, String>{
 	    		);
 
 
+	      
 	       
+	       @Query("""
+	    		   SELECT new com.example.demo.Dto.YearlyBusinessDto(
+	    		       FUNCTION('MONTHNAME', o.created_at),
+	    		       SUM(o.total_amount)
+	    		   )
+	    		   
+	    		   FROM Orders o
+	    		   WHERE FUNCTION('YEAR', o.created_at) = :year
+	    		   AND o.status = :status
+	    		   GROUP BY FUNCTION('MONTH', o.created_at), FUNCTION('MONTHNAME', o.created_at)
+	    		   ORDER BY FUNCTION('MONTH', o.created_at)
+	    		   """)
+	    		   List<YearlyBusinessDto> getMonthlyTotal(@Param("year") long year,
+	    		                                          @Param("status") Status status);
+
+            
+	       
+
 	       
 }
