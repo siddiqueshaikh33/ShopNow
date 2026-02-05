@@ -54,13 +54,16 @@ function Profile({ handleLogout }) {
             >
               Logout...
             </button>
+            { user.role == "CUSTOMER" ? (
              <button
               className="w-full px-4 py-2 hover:bg-blue-400 text-black font-semibold"
               onClick={navigateOrder}
             >
               Orders History
             </button>
+            ) : null}
           </div>
+            
         </div>
       )}
     </div>
