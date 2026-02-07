@@ -29,8 +29,6 @@ public class SecurityConfig {
         this.AuthFilter = AuthFilter;
     }
     
-
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -50,10 +48,8 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable());
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        // ✅ Stateless API (JWT)
+       
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        // ✅ Stop Google HTML redirect for API unauthorized
         http.exceptionHandling(ex -> ex
             .authenticationEntryPoint((request, response, authException) -> {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -61,18 +57,16 @@ public class SecurityConfig {
             })
         );
 
+        
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/error").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                // public routes
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/oauth2/**").permitAll()
                 .requestMatchers("/login/oauth2/**").permitAll()
-
-                // protected routes
                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/**").hasAuthority("CUSTOMER")
+                .requestMatchers("/api/**").hasAnyAuthority("ADMIN", "CUSTOMER")
 
 
                 .anyRequest().authenticated()
@@ -82,8 +76,7 @@ public class SecurityConfig {
         http.httpBasic(basic -> basic.disable());
 
         http.oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler));
-
-        // ✅ Add JWT filter before username/password filter
+        
         http.addFilterBefore(AuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

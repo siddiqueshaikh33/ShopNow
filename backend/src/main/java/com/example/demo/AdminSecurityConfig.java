@@ -38,12 +38,10 @@ public class AdminSecurityConfig {
 	                .anyRequest().permitAll()
 	            )
 
-	            // disable default login mechanisms
 	            .oauth2Login(oauth -> oauth.disable())
 	            .formLogin(form -> form.disable())
 	            .httpBasic(basic -> basic.disable())
 
-	            // stop redirects → return 401 instead
 	            .exceptionHandling(ex -> ex
 	                .authenticationEntryPoint((req, res, e) -> res.sendError(401, "Unauthorized"))
 	            );

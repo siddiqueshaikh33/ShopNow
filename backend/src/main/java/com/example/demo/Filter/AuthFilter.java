@@ -42,9 +42,8 @@ public class AuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String reqUrl = req.getRequestURI();
-        LOGGER.info("JwtAuthFilter request: {} {}", req.getMethod(), reqUrl);
+        //LOGGER.info("JwtAuthFilter request: {} {}", req.getMethod(), reqUrl);
 
-        // ✅ skip public routes
         if (reqUrl.startsWith("/oauth2") ||
             reqUrl.startsWith("/login/oauth2") ||
             reqUrl.startsWith("/api/auth/login") ||
@@ -53,24 +52,22 @@ public class AuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // ✅ allow OPTIONS
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
         	resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
         String token = getAuthTokenFromCookies(req);
-        LOGGER.warn("JWT token", token);
+       // LOGGER.warn("JWT token", token);
         if (token == null || !authService.verifyToken(token)) {
             LOGGER.warn("JWT Missing or Invalid");
-            chain.doFilter(req, resp); // let Spring Security handle unauthorized (401)
+            chain.doFilter(req, resp); 
             return;
         }
 
         String username = authService.extractUsername(token);
-        LOGGER.warn("username", username);
+      //  LOGGER.warn("username", username);
         Optional<Users> userOptional = userRepository.findByUsername(username);
-        LOGGER.warn("userOptional", userOptional);
         if (userOptional.isEmpty()) {
             LOGGER.warn("User not found for username {}", username);
             chain.doFilter(req, resp);
@@ -78,12 +75,12 @@ public class AuthFilter extends OncePerRequestFilter {
         }
 
         Users user = userOptional.get();
-        LOGGER.info("user ", user);
-        String role = user.getRole().name(); // ADMIN / CUSTOMER
-        LOGGER.info("user Role ", role);
+       // LOGGER.info("user ", user);
+        String role = user.getRole().name(); 
+     //   LOGGER.info("user Role ", role);
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
-                        user,  // principal (you can store user object)
+                        user,  
                         null,
                         List.of(new SimpleGrantedAuthority(role))
                 );
@@ -91,7 +88,7 @@ public class AuthFilter extends OncePerRequestFilter {
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         
-        LOGGER.info("user auth", user);
+        //LOGGER.info("user auth", user);
         req.setAttribute("Authorized_User", user);
 
 

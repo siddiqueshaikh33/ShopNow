@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@ServletComponentScan 
+
 public class ShopNowBackendApplication {
 
 	public static void main(String[] args) {

@@ -27,7 +27,6 @@ function Profile({ handleLogout }) {
 
   return (
     <div className="relative inline-block" ref={menuRef}>
-      {/* Profile Button */}
       <div
         className="flex border rounded-full bg-white cursor-pointer"
         onClick={() => setOpen(!open)}
@@ -40,13 +39,12 @@ function Profile({ handleLogout }) {
         <p className="m-2 p-1 text-black font-semibold">{loading ? "Loading..." : user ? user.username : "Guest"}</p>
       </div>
 
-      {/* Dropdown */}
       {open && (
         <div className="absolute top-16 right-0 w-40 z-50">
-          {/* Triangle */}
+         
           <div className="absolute -top-2 right-18 w-4 h-4 bg-white border-l border-t rotate-45"></div>
 
-          {/* Box */}
+      
           <div className="bg-white border rounded shadow-md">
             <button
               className="w-full px-4 py-2 hover:bg-red-400 text-black border-b font-semibold"
