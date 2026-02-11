@@ -22,11 +22,12 @@ public class MeController {
 	@GetMapping("/me")
 	public ResponseEntity<?> getUser(HttpServletRequest req) {
 		Users users = (Users) req.getAttribute("Authorized_User");
-		System.out.println(users.getUsername());
+		//System.out.println(users.getUsername());
 		if(users != null) {
-			System.out.println("user" + users.getUsername() + "pass" + users.getPassword());
+			//System.out.println("user" + users.getUsername() + "pass" + users.getPassword());
 			return ResponseEntity.ok(Map.of("username", users.getUsername() , "role", users.getRole()));
-		}
+		}else {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
+		}
 	}
 }

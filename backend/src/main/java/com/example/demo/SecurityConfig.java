@@ -28,9 +28,9 @@ public class SecurityConfig {
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
         this.AuthFilter = AuthFilter;
     }
-    
+
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -44,7 +44,7 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.csrf(csrf -> csrf.disable());
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
@@ -67,18 +67,13 @@ public class SecurityConfig {
                 .requestMatchers("/login/oauth2/**").permitAll()
                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/**").hasAnyAuthority("ADMIN", "CUSTOMER")
-
-
                 .anyRequest().authenticated()
         );
 
         http.formLogin(form -> form.disable());
         http.httpBasic(basic -> basic.disable());
-
         http.oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler));
-        
         http.addFilterBefore(AuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

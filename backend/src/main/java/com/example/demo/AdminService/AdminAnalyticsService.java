@@ -33,11 +33,9 @@ public class AdminAnalyticsService {
 
 	        double totalSales = orderRepo.sumTotalAmountByMonthAndYear(month, year, Status.SUCCESS);
 	    
-
 	        List<CountTotalCatgorySalesDto> categorySalesCount =
 	                orderRepo.countOrdersPerCategory(month, year, Status.SUCCESS);
 
-	
 	        Map<String, Object> responseMap = new HashMap<>();
 	        responseMap.put("total_amount", totalSales);
 	        responseMap.put("category_sales_count", categorySalesCount);
@@ -46,34 +44,25 @@ public class AdminAnalyticsService {
 	}
 	
 	public Map<String, Object> getYearBusiness(long year) {
-
-	    log.info("✅ Service running... year={}", year);
-
+	   // log.info("✅ Service running... year={}", year);
 	    Map<String, Object> responseMap = new HashMap<>();
-
 	    try {
-	        log.info("📌 Calling repository: getMonthlyTotal(year={}, status={})", year, Status.SUCCESS);
-
+	      //  log.info("📌 Calling repository: getMonthlyTotal(year={}, status={})", year, Status.SUCCESS);
 	        List<YearlyBusinessDto> yearlyBusinessDtos =
 	                orderRepo.getMonthlyTotal(year, Status.SUCCESS);
 
 	        if (yearlyBusinessDtos == null) {
-	            log.warn("⚠️ Repository returned NULL list!");
+	           // log.warn("⚠️ Repository returned NULL list!");
 	            yearlyBusinessDtos = new ArrayList<>();
 	        }
-
-	        log.info("✅ Repository success. Monthly data count={}", yearlyBusinessDtos.size());
-
+	     //   log.info("✅ Repository success. Monthly data count={}", yearlyBusinessDtos.size());
 	        responseMap.put("yearly_data", yearlyBusinessDtos);
 	        return responseMap;
-
 	    } catch (Exception e) {
-	        log.error("🔥 Error in getYearBusiness() year={}", year, e);
-
-	        // Return error details in response (optional)
 	        responseMap.put("error", "Failed to fetch yearly analytics");
 	        responseMap.put("message", e.getMessage());
 	        return responseMap;
+	        
 	    }
 	}
 

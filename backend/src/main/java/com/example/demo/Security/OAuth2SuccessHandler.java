@@ -63,10 +63,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             jwtToken = authService.createNewCookie(email, "CUSTOMER");
         }
 
-        // ✅ Set JWT cookie
+
         authService.addCookietoClient(response, jwtToken);
 
-        // ✅ REDIRECT TO FRONTEND DASHBOARD
+
         response.sendRedirect("http://localhost:5173/dashboard");
     }
 }

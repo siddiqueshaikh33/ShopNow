@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Dto.AddCartDto;
 import com.example.demo.Entity.Users;
-import com.example.demo.Filter.AuthFilter;
-import com.example.demo.Repository.UserRepository;
 import com.example.demo.Services.CartService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,12 +32,12 @@ public class CartController {
 	
 	 private static final Logger LOGGER = LoggerFactory.getLogger(CartController.class);
 	private CartService cartService;
-	private UserRepository userRepository;
+
 	
-	public CartController(CartService cartService, UserRepository userRepository) {
+	public CartController(CartService cartService) {
 		super();
 		this.cartService = cartService;
-		this.userRepository = userRepository;
+	
 	}
 
 	
