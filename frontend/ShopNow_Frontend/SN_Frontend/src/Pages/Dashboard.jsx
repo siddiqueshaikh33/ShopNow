@@ -114,7 +114,7 @@ function Dashboard() {
         )}
       </div>
 
-      {/* Products Grid */}
+  
       <div className="flex flex-wrap justify-center gap-6 p-2 w-auto">
         {loading
           ? [...Array(15)].map((_, i) => <CardSkeleton key={i} />)

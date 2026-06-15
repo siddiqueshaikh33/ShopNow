@@ -4,6 +4,7 @@ package com.example.demo.Services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.Categories;
@@ -39,7 +40,7 @@ public class ProductService {
 		return categoryOptional.get();
 	}
 	
-	
+	@Cacheable(value = "productsByCategory2", key = "#catergoryName != null ? #catergoryName : 'all'")
 	public List<Products> getProductsByCategoryId(String catergoryName) {
 		if(catergoryName != null && !catergoryName.isEmpty()) {
 			Categories categoryObject = getCategoryByCategoryName(catergoryName);

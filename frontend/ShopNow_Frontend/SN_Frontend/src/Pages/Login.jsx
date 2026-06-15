@@ -102,7 +102,7 @@ bg-[length:400%_400%] animate-gradient"
       <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[120px] sm:min-h-[200px] lg:min-h-[260px]">
         <span
           ref={el}
-          className="text-xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
+          className="text-2xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
           style={{ fontFamily: "Inter, sans-serif" }}
         />
       </div>

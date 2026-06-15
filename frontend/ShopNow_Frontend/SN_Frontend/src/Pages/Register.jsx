@@ -132,18 +132,17 @@ px-4 lg:px-20 gap-8
 bg-gradient-to-r from-[#ADEFD1] via-[#7FD8BE] to-[#ADEFD1]
 bg-[length:400%_400%] animate-gradient" 
     >
-      <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[120px] sm:min-h-[200px] lg:min-h-[260px]">
+      <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[150px] sm:min-h-[200px] lg:min-h-[260px] pt-2 lg:pt-0">
     
         <span
           ref={el}
-          className="text-xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
+          className="text-2xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
           style={{ fontFamily: "Inter, sans-serif" }}
         />
       </div>
      
 
-      {/* Right Side - Register Form */}
-      <div className="w-full sm:w-[380px] bg-white rounded-xl shadow-xl p-2 lg:p-2 lg:pt-4">
+      <div className="w-full sm:w-[380px] bg-white rounded-xl shadow-xl p-2 lg:p-2 lg:pt-4 mb-10">
         <h2 className="text-3xl font-bold text-center mb-4">Register</h2>
         <form
           className="flex flex-col bg-white p-2 lg:p-5 pb-2 w-auto lg:w-92 relative"
@@ -153,7 +152,7 @@ bg-[length:400%_400%] animate-gradient"
         >
           <label
             htmlFor="username"
-            className="absolute top-2 left-7 pr-1 pl-1 bg-white text-black font-semibold"
+            className="absolute top-[-0.40rem] left-5 lg:top-2 lg:left-7 pr-1 pl-1  bg-white text-black font-semibold"
           >
             Username
           </label>
@@ -166,7 +165,7 @@ bg-[length:400%_400%] animate-gradient"
           />
           <label
             htmlFor="email"
-            className="absolute top-18 left-7 pr-1 pl-1 bg-white text-black font-semibold"
+            className="absolute top-15 left-5 lg:top-18 lg:left-7 pr-1 pl-1 bg-white text-black font-semibold"
           >
             Email
           </label>
@@ -204,7 +203,7 @@ bg-[length:400%_400%] animate-gradient"
           </div>
           <label
             htmlFor="role"
-            className="absolute top-51 left-7 pr-1 pl-1 bg-white text-black font-semibold"
+            className="absolute top-48 left-5 lg:top-51 lg:left-7 pr-1 pl-1 bg-white text-black font-semibold"
           >
             Role
           </label>

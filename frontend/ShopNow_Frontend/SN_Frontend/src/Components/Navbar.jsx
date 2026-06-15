@@ -42,7 +42,7 @@ function Navbar({
   return (
     <nav className="sticky top-0 z-50">
       <div
-        className="flex w-full pt-3 pb-3 px-4 lg:px-15 flex-row justify-between items-center"
+        className="flex w-full pt-2 pb-2 lg:pt-3 lg:pb-3 lg:px-4 lg:px-15 flex-row justify-between items-center"
         style={{ backgroundColor: bgColor }}
       >
         <div className="flex items-center cursor-pointer" onClick={handleDashboardNavigation}>
@@ -50,7 +50,7 @@ function Navbar({
             <img
               src={logoSrc}
               alt="Logo"
-              className="w-12 h-12 rounded-full object-contain mr-2"
+              className="lg:w-12 h-12 rounded-full object-contain mr-2"
             />
           )}
           <p className="text-xl lg:text-3xl font-bold">{title}</p>

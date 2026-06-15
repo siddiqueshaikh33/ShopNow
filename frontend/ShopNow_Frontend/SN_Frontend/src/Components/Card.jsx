@@ -1,6 +1,6 @@
 function Card({product, onAction}) {
   return (
-    <div className="w-72 h-auto rounded-xl border-black border-1 bg-white shadow-md overflow-hidden transition hover:shadow-xl p-2">
+    <div className="w-56 lg:w-72 h-auto rounded-xl border-black border-1 bg-white shadow-md overflow-hidden transition hover:shadow-xl p-2">
 
       <img
         src={product.product_img}
