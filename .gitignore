@@ -8,6 +8,9 @@ backend/target/
 backend/.mvn/
 backend/*.log
 backend/.env*
+*local.properties
+*.bat
+*.ps1
 
 # ================= IDE / OS =================
 .vscode/

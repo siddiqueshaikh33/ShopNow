@@ -45,7 +45,10 @@ function Navbar({
         className="flex w-full pt-2 pb-2 lg:pt-3 lg:pb-3 lg:px-4 lg:px-15 flex-row justify-between items-center"
         style={{ backgroundColor: bgColor }}
       >
-        <div className="flex items-center cursor-pointer" onClick={handleDashboardNavigation}>
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={handleDashboardNavigation}
+        >
           {logoSrc && (
             <img
               src={logoSrc}

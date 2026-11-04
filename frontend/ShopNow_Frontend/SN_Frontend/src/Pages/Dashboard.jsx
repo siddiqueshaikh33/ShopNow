@@ -56,10 +56,16 @@ function Dashboard() {
 
   const handleCardAction = async (product) => {
     if (!user?.username) return;
-   console.log("Adding to cart:", product);
-    const data = { username: user.username, product_id: product.product_id, quantity: 1 };
+    console.log("Adding to cart:", product);
+    const data = {
+      username: user.username,
+      product_id: product.product_id,
+      quantity: 1,
+    };
     try {
-      const response = await axiosInstance.post("/cart/add", data, { withCredentials: true });
+      const response = await axiosInstance.post("/cart/add", data, {
+        withCredentials: true,
+      });
       setCount(response.data.count);
       toast.success("Product added to cart successfully!");
     } catch (error) {
@@ -77,12 +83,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-100">
-         <Navbar
-        count={count}
-        logoSrc={logo}
-        title="ShopNow!"
-        bgColor="#ADEFD1"
-      />
+      <Navbar count={count} logoSrc={logo} title="ShopNow!" bgColor="#ADEFD1" />
 
       {/* Category Banner */}
       <div className="p-4">
@@ -91,13 +92,18 @@ function Dashboard() {
             <div className="h-10 w-3/4 bg-gray-200 mb-4 mx-auto rounded"></div>
             <div className="flex gap-4 overflow-x-auto justify-center">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-24 w-24 bg-gray-200 rounded-full flex-shrink-0"></div>
+                <div
+                  key={i}
+                  className="h-24 w-24 bg-gray-200 rounded-full flex-shrink-0"
+                ></div>
               ))}
             </div>
           </div>
         ) : (
           <div className="bg-white shadow-md rounded-xl p-4 mb-1 ">
-            <h2 className="text-2xl font-bold mb-4 flex justify-center">Get A Great Deal</h2>
+            <h2 className="text-2xl font-bold mb-4 flex justify-center">
+              Get A Great Deal
+            </h2>
             <div className="flex gap-7 overflow-x-auto py-2 justify-center">
               {categories.map((cat) => (
                 <button
@@ -105,7 +111,11 @@ function Dashboard() {
                   className="flex flex-col justify-center items-center flex-shrink-0 text-center hover:scale-105 transform transition duration-300"
                   onClick={() => setCategoryName(cat.name)}
                 >
-                  <img src={cat.img} alt={cat.name} className="h-24 w-24 rounded-full object-cover mb-1" />
+                  <img
+                    src={cat.img}
+                    alt={cat.name}
+                    className="h-24 w-24 rounded-full object-cover mb-1"
+                  />
                   <span className="font-semibold">{cat.name}</span>
                 </button>
               ))}
@@ -114,16 +124,22 @@ function Dashboard() {
         )}
       </div>
 
-  
       <div className="flex flex-wrap justify-center gap-6 p-2 w-auto">
         {loading
           ? [...Array(15)].map((_, i) => <CardSkeleton key={i} />)
-          : products.map((product) => <Card key={product.product_id} product={product} onAction={handleCardAction} />)}
+          : products.map((product) => (
+              <Card
+                key={product.product_id}
+                product={product}
+                onAction={handleCardAction}
+              />
+            ))}
       </div>
-      <footer className="mt-30"><Footer /></footer>
+      <footer className="mt-30">
+        <Footer />
+      </footer>
     </div>
   );
 }
 
 export default Dashboard;
-

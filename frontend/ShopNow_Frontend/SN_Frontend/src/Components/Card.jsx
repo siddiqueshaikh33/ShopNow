@@ -1,7 +1,6 @@
-function Card({product, onAction}) {
+function Card({ product, onAction }) {
   return (
     <div className="w-56 lg:w-72 h-auto rounded-xl border-black border-1 bg-white shadow-md overflow-hidden transition hover:shadow-xl p-2">
-
       <img
         src={product.product_img}
         alt={product.name}
@@ -14,18 +13,19 @@ function Card({product, onAction}) {
           {product.name}
         </h3>
         <h3 className="font-semibold text-md text-gray-800">
-           Stock : {product.stock > 0 ? product.stock : "Out of Stock"}
+          Stock : {product.stock > 0 ? product.stock : "Out of Stock"}
         </h3>
       </div>
       <div className="px-4 mt-1 flex flex-col">
-        <p className="text-md text-gray-600">
-          {product.description}
-        </p>
+        <p className="text-md text-gray-600">{product.description}</p>
         <p className="mt-1 text-md font-semibold text-black-500 line-clamp-3">
           Price : ${product.price}
         </p>
-        <button className="mt-4 text-lg font-semibold text-blue-600 bg-blue-100 px-3 py-2 rounded-md hover:bg-blue-200 transition w-full" onClick={()=> onAction(product)}>
-         Add To Cart
+        <button
+          className="mt-4 text-lg font-semibold text-blue-600 bg-blue-100 px-3 py-2 rounded-md hover:bg-blue-200 transition w-full"
+          onClick={() => onAction(product)}
+        >
+          Add To Cart
         </button>
       </div>
     </div>

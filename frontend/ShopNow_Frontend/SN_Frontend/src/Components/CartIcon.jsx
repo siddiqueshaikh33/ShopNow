@@ -1,8 +1,7 @@
 import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function CartIcon({count}) {
-  
+export default function CartIcon({ count }) {
   const navigate = useNavigate();
 
   return (

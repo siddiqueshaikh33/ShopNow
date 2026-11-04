@@ -1,13 +1,12 @@
 @import "tailwindcss";
 
 body {
-      margin: 0;
+  margin: 0;
   padding: 0;
   height: 100%;
 }
 
 /* Medium soft animated background */
-
 
 @keyframes gradient {
   0% {
@@ -24,6 +23,3 @@ body {
 .animate-gradient {
   animation: gradient 10s ease infinite;
 }
-
-
-

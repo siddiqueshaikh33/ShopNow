@@ -27,7 +27,10 @@ function ProtectedRoute({ children }) {
         setUser(res.data);
         console.log("Session restored", res.data);
       } catch (error) {
-        console.error("Failed to restore session", error.response?.data || error.message);
+        console.error(
+          "Failed to restore session",
+          error.response?.data || error.message
+        );
         setUser(null);
       } finally {
         setLoading(false);

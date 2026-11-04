@@ -2,9 +2,8 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../api/axiosInstance";
 
-function CartItems({ item, updateCart, deleteCart}) {
+function CartItems({ item, updateCart, deleteCart }) {
   const [loading, setLoading] = useState(false);
-
 
   const handleUpdateQuantity = async (e, action) => {
     e.preventDefault();
@@ -21,7 +20,7 @@ function CartItems({ item, updateCart, deleteCart}) {
 
     try {
       setLoading(true);
-       updateCart(item.product_id, newQuantity); // Update parent state
+      updateCart(item.product_id, newQuantity); // Update parent state
       await axiosInstance.put(
         "/cart/update",
         null, // IMPORTANT for @RequestParam
@@ -52,8 +51,7 @@ function CartItems({ item, updateCart, deleteCart}) {
         withCredentials: true,
       });
       deleteCart(item.product_id); // Update parent state
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
       toast.error(error.response?.data || "Failed to remove item");
     } finally {
@@ -63,11 +61,11 @@ function CartItems({ item, updateCart, deleteCart}) {
 
   return (
     <div className="w-full bg-white flex items-center gap-6 p-5 mb-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative">
-      
       {/* Remove Button */}
       <button
         className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-red-500 hover:text-white transition"
-        title="Remove item" onClick={(e) => handleDelete(e)}
+        title="Remove item"
+        onClick={(e) => handleDelete(e)}
       >
         ✕
       </button>
@@ -84,7 +82,6 @@ function CartItems({ item, updateCart, deleteCart}) {
 
       {/* Content */}
       <div className="flex flex-col flex-1 justify-between h-full">
-        
         {/* Product Info */}
         <div>
           <h3 className="text-xl font-semibold text-gray-900">
@@ -97,7 +94,6 @@ function CartItems({ item, updateCart, deleteCart}) {
 
         {/* Bottom Section */}
         <div className="flex items-end justify-between mt-3">
-          
           {/* Quantity Controls */}
           <div className="flex items-center gap-3">
             <button
@@ -135,4 +131,3 @@ function CartItems({ item, updateCart, deleteCart}) {
 }
 
 export default CartItems;
-

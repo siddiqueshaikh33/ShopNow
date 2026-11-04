@@ -115,7 +115,7 @@ function Order() {
           )}
         </div>
       </div>
-      <footer  className="mt-20">
+      <footer className="mt-20">
         <Footer />
       </footer>
     </div>

@@ -1,10 +1,8 @@
 package com.example.demo.Services;
 
-
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.Categories;
@@ -15,11 +13,11 @@ import com.example.demo.Repository.ProductRepository;
 
 @Service
 public class ProductService {
-    
+
 	private ProductRepository productRepository;
-	
+
 	private ProductImgRepository productImgRepository;
-	
+
 	private CategoriesRepository categoriesRepository;
 
 	public ProductService(ProductRepository productRepository, ProductImgRepository productImgRepository,
@@ -29,28 +27,27 @@ public class ProductService {
 		this.productImgRepository = productImgRepository;
 		this.categoriesRepository = categoriesRepository;
 	}
-	
+
 	public Categories getCategoryByCategoryName(String categoryName) {
 		Optional<Categories> categoryOptional = categoriesRepository.findByCategoryName(categoryName);
-		
-		if(!categoryOptional.isPresent()) {
+
+		if (!categoryOptional.isPresent()) {
 			throw new RuntimeException("Category Not Found");
 		}
-		
+
 		return categoryOptional.get();
 	}
-	
-	@Cacheable(value = "productsByCategory2", key = "#catergoryName != null ? #catergoryName : 'all'")
+
 	public List<Products> getProductsByCategoryId(String catergoryName) {
-		if(catergoryName != null && !catergoryName.isEmpty()) {
+		if (catergoryName != null && !catergoryName.isEmpty()) {
 			Categories categoryObject = getCategoryByCategoryName(catergoryName);
 			System.out.println("cat:" + productRepository.findByCategories_CategoryId(categoryObject.getCategoryId()));
 			return productRepository.findByCategories_CategoryId(categoryObject.getCategoryId());
 		} else {
-		    return productRepository.findAll();
+			return productRepository.findAll();
 		}
-}
-	
+	}
+
 	public String getProductImgByProductId(int Product_id) {
 		return productImgRepository.findImageUrlByProductId(Product_id);
 	}

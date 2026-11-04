@@ -50,7 +50,7 @@ function AdminDashboard() {
       const response = await axios.post(
         "http://localhost:8080/admin/addProduct",
         productData,
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       console.log("Product added successfully:", response.data);
@@ -78,7 +78,7 @@ function AdminDashboard() {
     try {
       const response = await axios.get(
         `http://localhost:8080/admin/product/${productId}`,
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       setProduct(response.data);
@@ -95,7 +95,7 @@ function AdminDashboard() {
     try {
       const response = await axios.delete(
         `http://localhost:8080/admin/deleteproduct/${productId}`,
-        { withCredentials: true },
+        { withCredentials: true }
       );
       console.log("Product deleted successfully:", response.data);
       toast.success("Product deleted successfully");
@@ -121,7 +121,7 @@ function AdminDashboard() {
     try {
       const response = await axios.get(
         `http://localhost:8080/admin/getDetails/${userId}`,
-        { withCredentials: true },
+        { withCredentials: true }
       );
       setUsername(response.data.username);
       setEmail(response.data.email);
@@ -131,7 +131,7 @@ function AdminDashboard() {
       toast.success("User fetched successfully");
     } catch (error) {
       toast.error(
-        error.response?.data || "Failed to fetch user or User not found",
+        error.response?.data || "Failed to fetch user or User not found"
       );
       console.error("Error fetching user:", error);
     }
@@ -150,7 +150,7 @@ function AdminDashboard() {
       const response = await axios.put(
         `http://localhost:8080/admin/updateUser/${userId}`,
         updatedUserData,
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       console.log("User updated successfully:", response.data);
@@ -181,7 +181,7 @@ function AdminDashboard() {
         {
           params: { month: parseInt(month), year: parseInt(year) },
           withCredentials: true,
-        },
+        }
       );
 
       toast.success("Monthly business data fetched successfully");
@@ -221,7 +221,7 @@ function AdminDashboard() {
         {
           params: { year: parseInt(e.target.year.value) },
           withCredentials: true,
-        },
+        }
       );
 
       toast.success("Yearly reports data fetched successfully");
@@ -235,7 +235,7 @@ function AdminDashboard() {
 
   return (
     <div>
-    <Navbar
+      <Navbar
         count={0}
         logoSrc={logo}
         title="ShopNow!"
@@ -594,34 +594,36 @@ function AdminDashboard() {
               <h2 className="text-lg font-bold mb-2">Category Sales Count</h2>
 
               <p className="font-semibold mb-4">Total Amount: ₹{totalAmount}</p>
-              { categoryData.length > 0 ? (
-              <PieChart width={400} height={300}>
-                <Pie
-                  data={categoryData.map((item) => ({
-                    name: item.category,
-                    value: item.categoryCount,
-                  }))}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
+              {categoryData.length > 0 ? (
+                <PieChart width={400} height={300}>
+                  <Pie
+                    data={categoryData.map((item) => ({
+                      name: item.category,
+                      value: item.categoryCount,
+                    }))}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
 
-                <Tooltip />
-                <Legend />
-              </PieChart>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
               ) : (
                 <div className="flex justify-center">
-                  <p className="font-semibold text-gray-600">No data available for the selected month and year.</p>
+                  <p className="font-semibold text-gray-600">
+                    No data available for the selected month and year.
+                  </p>
                 </div>
               )}
             </div>
@@ -633,9 +635,8 @@ function AdminDashboard() {
         <PopupModal
           title="Yearly Reports Overview"
           onClose={() => {
-            closePopup(),
-            setReportYear([]),
-            setResponseYear(false);}}
+            (closePopup(), setReportYear([]), setResponseYear(false));
+          }}
         >
           {!responseYear ? (
             <form
@@ -660,42 +661,44 @@ function AdminDashboard() {
               </button>
             </form>
           ) : (
-            
-            <div className="flex justify-start mt-10"> 
-            { reportYear.length > 0 ? (
-              <div style={{ width: "50%", height: 350 }}>
-                <ResponsiveContainer>
-                  <BarChart
-                    data={reportYear.map((item, index) => ({
-                      month: item.month,
-                      saleAmount: item.saleAmount,
-                      fill: BAR_COLORS[index % BAR_COLORS.length],
-                    }))}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-
-                    <Bar
-                      dataKey="saleAmount"
-                      radius={[6, 6, 0, 0]}
-                      barSize={30}
+            <div className="flex justify-start mt-10">
+              {reportYear.length > 0 ? (
+                <div style={{ width: "50%", height: 350 }}>
+                  <ResponsiveContainer>
+                    <BarChart
+                      data={reportYear.map((item, index) => ({
+                        month: item.month,
+                        saleAmount: item.saleAmount,
+                        fill: BAR_COLORS[index % BAR_COLORS.length],
+                      }))}
                     >
-                      {reportYear.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={BAR_COLORS[index % BAR_COLORS.length]}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ): ( <div className="flex justify-center">
-            <p className="font-semibold text-gray-600">No data available for the selected year.</p>
-            </div>
-            ) }
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+
+                      <Bar
+                        dataKey="saleAmount"
+                        radius={[6, 6, 0, 0]}
+                        barSize={30}
+                      >
+                        {reportYear.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={BAR_COLORS[index % BAR_COLORS.length]}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <p className="font-semibold text-gray-600">
+                    No data available for the selected year.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </PopupModal>

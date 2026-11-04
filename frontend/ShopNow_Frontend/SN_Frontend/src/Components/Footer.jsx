@@ -4,16 +4,12 @@ function Footer() {
   return (
     <footer className="bg-[#ADEFD1] text-gray-800 mt-12">
       <div className="max-w-7xl mx-auto px-6 py-8">
-
         {/* Top Section */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-
           {/* Brand */}
           <div className="text-center md:text-left">
             <h2 className="text-2xl font-bold">ShopNow!</h2>
-            <p className="text-sm text-gray-700">
-              Smart shopping made simple.
-            </p>
+            <p className="text-sm text-gray-700">Smart shopping made simple.</p>
           </div>
 
           {/* Social Icons */}
@@ -36,7 +32,8 @@ function Footer() {
         {/* Bottom Section */}
         <div className="text-center text-sm space-y-2">
           <p>
-            © {new Date().getFullYear()} <span className="font-semibold">ShopNow!</span>
+            © {new Date().getFullYear()}{" "}
+            <span className="font-semibold">ShopNow!</span>
             &nbsp;• All rights reserved
           </p>
 
@@ -51,7 +48,6 @@ function Footer() {
             Built by <span className="font-semibold">Siddique Shaikh</span>
           </p>
         </div>
-
       </div>
     </footer>
   );

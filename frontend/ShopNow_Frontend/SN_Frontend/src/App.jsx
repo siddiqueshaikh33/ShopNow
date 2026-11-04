@@ -10,9 +10,8 @@ import Order from "./Pages/Order";
 import AdminDashboard from "./Pages/AdminDashboard";
 
 function App() {
-  
   return (
-     <>
+    <>
       <Routes>
         <Route path="/" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -41,17 +40,17 @@ function App() {
             </ProtectedRoute>
           }
         />
-          <Route
+        <Route
           path="/admindashboard"
           element={
             <ProtectedRoute>
-             <AdminDashboard />
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />
       </Routes>
 
-       <ToastContainer
+      <ToastContainer
         position="bottom-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -61,8 +60,7 @@ function App() {
         theme="colored"
       />
     </>
-  )
-  
+  );
 }
 
-export default App
+export default App;

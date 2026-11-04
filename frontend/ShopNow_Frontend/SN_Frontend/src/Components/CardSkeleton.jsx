@@ -1,7 +1,6 @@
 function CardSkeleton() {
   return (
     <div className="w-72 h-96 rounded-2xl bg-white shadow-md overflow-hidden animate-pulse">
-
       {/* Image skeleton */}
       <div className="h-50 bg-gray-200" />
 
