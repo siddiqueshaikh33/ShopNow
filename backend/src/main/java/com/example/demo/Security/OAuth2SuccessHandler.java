@@ -1,6 +1,5 @@
 package com.example.demo.Security;
 
-
 import java.io.IOException;
 import java.util.Optional;
 
@@ -49,7 +48,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         if (userOptional.isPresent()) {
             user = userOptional.get();
-            jwtToken = authService.validateCookie(user); // your logic
         } else {
             user = new Users();
             user.setEmail(email);
@@ -58,14 +56,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             user.setProvider(Provider.GOOGLE);
             user.setProviderId(googleId);
 
-            userRepository.save(user);
-
-            jwtToken = authService.createNewCookie(email, "CUSTOMER");
+            user = userRepository.save(user);
         }
 
+        jwtToken = authService.validateCookie(user);
 
         authService.addCookietoClient(response, jwtToken);
-
 
         response.sendRedirect("http://localhost:5173/dashboard");
     }

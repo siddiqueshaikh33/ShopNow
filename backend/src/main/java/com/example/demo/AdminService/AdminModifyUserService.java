@@ -1,48 +1,50 @@
 package com.example.demo.AdminService;
 
-
-
-
-
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Dto.AdminUpdateUserRequest;
+import com.example.demo.Dto.UserResponseDto;
+import com.example.demo.Entity.Role;
 import com.example.demo.Entity.Users;
 import com.example.demo.Repository.UserRepository;
 
 @Service
 public class AdminModifyUserService {
   
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 
-	
 	public AdminModifyUserService(UserRepository userRepository) {
 		super();
 		this.userRepository = userRepository;
 	}
 
-	public Users getUserDetails(int userId) {
-		
-		Users users = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Users not found"));
-		
-		return users;
+	public UserResponseDto getUserDetails(int userId) {
+		Users user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+		return UserResponseDto.fromEntity(user);
 	}
 	
-	 public Users updateUserDetails(int userId, AdminUpdateUserRequest updateRequest) {
+	public UserResponseDto updateUserDetails(int userId, AdminUpdateUserRequest updateRequest) {
+		Users existingUser = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found"));
 
-	        Users existingUser = userRepository.findById(userId)
-	                .orElseThrow(() -> new RuntimeException("User not found"));
+		if (updateRequest.getUsername() != null && !updateRequest.getUsername().isBlank()) {
+			existingUser.setUsername(updateRequest.getUsername().trim());
+		}
 
-	     
-	        if (updateRequest.getUsername() != null) {
-	            existingUser.setUsername(updateRequest.getUsername());
-	        }
+		if (updateRequest.getEmail() != null && !updateRequest.getEmail().isBlank()) {
+			existingUser.setEmail(updateRequest.getEmail().trim());
+		}
 
-	        if (updateRequest.getEmail() != null) {
-	            existingUser.setEmail(updateRequest.getEmail());
-	        }
+		if (updateRequest.getRole() != null && !updateRequest.getRole().isBlank()) {
+			try {
+				existingUser.setRole(Role.valueOf(updateRequest.getRole().trim().toUpperCase()));
+			} catch (IllegalArgumentException e) {
+				throw new RuntimeException("Invalid role specified");
+			}
+		}
 
-
-	        return userRepository.save(existingUser);
-	    }
+		Users savedUser = userRepository.save(existingUser);
+		return UserResponseDto.fromEntity(savedUser);
+	}
 }

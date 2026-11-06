@@ -42,7 +42,6 @@ public class SecurityConfig {
         return source;
     }
 
-
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -56,7 +55,6 @@ public class SecurityConfig {
                 response.getWriter().write("Unauthorized: Invalid or missing token");
             })
         );
-
         
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/error").permitAll()
@@ -77,5 +75,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
-

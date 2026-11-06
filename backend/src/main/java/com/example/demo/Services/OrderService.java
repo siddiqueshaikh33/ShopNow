@@ -3,18 +3,27 @@ package com.example.demo.Services;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.Dto.CreateOrderRequest;
+import com.example.demo.Dto.OrderItemRequest;
 import com.example.demo.Entity.CartItems;
 import com.example.demo.Entity.OrderItems;
 import com.example.demo.Entity.Orders;
+import com.example.demo.Entity.Products;
 import com.example.demo.Entity.Status;
 import com.example.demo.Entity.Users;
 import com.example.demo.Repository.CartItemRepository;
 import com.example.demo.Repository.OrderItemsRepository;
 import com.example.demo.Repository.OrderRepo;
+import com.example.demo.Repository.ProductRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
@@ -30,27 +39,63 @@ public class OrderService {
 	@Value("${razorpay.key_secret}")
 	String razorpaySecret;
 
-	OrderItemsRepository orderItemsRepository;
-
-	OrderRepo orderRepo;
-
-	CartItemRepository cartItemRepository;
+	private final OrderItemsRepository orderItemsRepository;
+	private final OrderRepo orderRepo;
+	private final CartItemRepository cartItemRepository;
+	private final ProductRepository productRepository;
 
 	public OrderService(OrderItemsRepository orderItemsRepository, OrderRepo orderRepo,
-			CartItemRepository cartItemRepository) {
+			CartItemRepository cartItemRepository, ProductRepository productRepository) {
 		super();
 		this.orderItemsRepository = orderItemsRepository;
 		this.orderRepo = orderRepo;
 		this.cartItemRepository = cartItemRepository;
+		this.productRepository = productRepository;
+	}
+
+	protected RazorpayClient createRazorpayClient() throws RazorpayException {
+		return new RazorpayClient(razorpayKeyId, razorpaySecret);
 	}
 
 	@Transactional
-	public String createOrder(Users user, BigDecimal totalPrice, List<OrderItems> cartItems) throws RazorpayException {
+	public String createOrder(Users user, CreateOrderRequest request) throws RazorpayException {
+		if (request == null || request.items() == null || request.items().isEmpty()) {
+			throw new IllegalArgumentException("Order items cannot be empty");
+		}
 
-		RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpaySecret);
+		List<Integer> productIds = request.items().stream()
+				.map(OrderItemRequest::productId)
+				.distinct()
+				.toList();
+
+		Map<Integer, Products> productMap = productRepository.findAllById(productIds).stream()
+				.collect(Collectors.toMap(Products::getProduct_id, Function.identity()));
+
+		BigDecimal serverCalculatedTotal = BigDecimal.ZERO;
+
+		for (OrderItemRequest item : request.items()) {
+			if (item == null) {
+				throw new IllegalArgumentException("Order item cannot be null");
+			}
+			if (item.quantity() <= 0) {
+				throw new IllegalArgumentException("Quantity must be greater than zero for product ID: " + item.productId());
+			}
+			Products product = productMap.get(item.productId());
+			if (product == null) {
+				throw new IllegalArgumentException("Product not found with ID: " + item.productId());
+			}
+			BigDecimal unitPrice = product.getPrice();
+			if (unitPrice == null) {
+				throw new IllegalStateException("Product price not configured for ID: " + item.productId());
+			}
+			BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(item.quantity()));
+			serverCalculatedTotal = serverCalculatedTotal.add(itemTotal);
+		}
+
+		RazorpayClient razorpayClient = createRazorpayClient();
 
 		JSONObject preparePayload = new JSONObject();
-		preparePayload.put("amount", totalPrice.multiply(BigDecimal.valueOf(100)).intValue());
+		preparePayload.put("amount", serverCalculatedTotal.multiply(BigDecimal.valueOf(100)).intValue());
 		preparePayload.put("currency", "INR");
 		preparePayload.put("receipt", "txn_" + System.currentTimeMillis());
 
@@ -59,7 +104,7 @@ public class OrderService {
 		Orders order = new Orders();
 		order.setId(razorpayorder.get("id"));
 		order.setUser(user);
-		order.setTotal_amount(totalPrice);
+		order.setTotal_amount(serverCalculatedTotal);
 		order.setStatus(Status.PENDING);
 
 		orderRepo.save(order);

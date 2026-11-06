@@ -75,11 +75,9 @@ function Cart() {
       const orderResponse = await axiosInstance.post(
         "/payment/create",
         {
-          totalAmount: overAllTotal,
-          cartItems: cartItems.map((item) => ({
+          items: cartItems.map((item) => ({
             productId: item.product_id,
             quantity: item.quantity,
-            pricePerUnit: item.price_per_unit,
           })),
         },
         { withCredentials: true }

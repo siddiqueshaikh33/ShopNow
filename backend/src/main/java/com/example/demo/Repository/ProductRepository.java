@@ -1,16 +1,22 @@
 package com.example.demo.Repository;
 
-
-
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.Entity.Products;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Products, Integer>{
+public interface ProductRepository extends JpaRepository<Products, Integer> {
+
 	List<Products> findByCategories_CategoryId(int category_id);
 
+	@Query("SELECT DISTINCT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories")
+	List<Products> findAllWithPrimaryImage();
+
+	@Query("SELECT DISTINCT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories WHERE p.categories.categoryId = :categoryId")
+	List<Products> findByCategories_CategoryIdWithPrimaryImage(@Param("categoryId") int categoryId);
 }

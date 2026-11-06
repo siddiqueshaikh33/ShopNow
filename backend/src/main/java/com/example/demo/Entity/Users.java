@@ -44,7 +44,6 @@ public class Users {
 		super();
 	}
 
-	
 	public Users(String username, String email, String password, Role role, Provider provider, String providerId) {
 		super();
 		this.username = username;
@@ -54,7 +53,6 @@ public class Users {
 		this.provider = provider;
 		this.providerId = providerId;
 	}
-
 
 	@PrePersist
 	protected void onCreate() {
@@ -66,7 +64,6 @@ public class Users {
 	protected void onUpdate() {
 		this.updated_at = LocalDateTime.now();
 	}
-
 
 	public int getUser_id() {
 		return userId;
@@ -108,25 +105,35 @@ public class Users {
 		this.role = role;
 	}
 
-
 	public Provider getProvider() {
 		return provider;
 	}
-
 
 	public void setProvider(Provider provider) {
 		this.provider = provider;
 	}
 
-
 	public String getProviderId() {
 		return providerId;
 	}
-
 
 	public void setProviderId(String providerId) {
 		this.providerId = providerId;
 	}
 
-   
+	public LocalDateTime getCreated_at() {
+		return created_at;
+	}
+
+	public void setCreated_at(LocalDateTime created_at) {
+		this.created_at = created_at;
+	}
+
+	public LocalDateTime getUpdated_at() {
+		return updated_at;
+	}
+
+	public void setUpdated_at(LocalDateTime updated_at) {
+		this.updated_at = updated_at;
+	}
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Dto.ProductResponseDto;
 import com.example.demo.Entity.Categories;
 import com.example.demo.Entity.Products;
 import com.example.demo.Repository.CategoriesRepository;
@@ -14,15 +15,12 @@ import com.example.demo.Repository.ProductRepository;
 @Service
 public class ProductService {
 
-	private ProductRepository productRepository;
-
-	private ProductImgRepository productImgRepository;
-
-	private CategoriesRepository categoriesRepository;
+	private final ProductRepository productRepository;
+	private final ProductImgRepository productImgRepository;
+	private final CategoriesRepository categoriesRepository;
 
 	public ProductService(ProductRepository productRepository, ProductImgRepository productImgRepository,
 			CategoriesRepository categoriesRepository) {
-		super();
 		this.productRepository = productRepository;
 		this.productImgRepository = productImgRepository;
 		this.categoriesRepository = categoriesRepository;
@@ -38,17 +36,23 @@ public class ProductService {
 		return categoryOptional.get();
 	}
 
-	public List<Products> getProductsByCategoryId(String catergoryName) {
-		if (catergoryName != null && !catergoryName.isEmpty()) {
-			Categories categoryObject = getCategoryByCategoryName(catergoryName);
-			System.out.println("cat:" + productRepository.findByCategories_CategoryId(categoryObject.getCategoryId()));
-			return productRepository.findByCategories_CategoryId(categoryObject.getCategoryId());
+	public List<Products> getProductsByCategoryId(String categoryName) {
+		if (categoryName != null && !categoryName.isEmpty()) {
+			Categories categoryObject = getCategoryByCategoryName(categoryName);
+			return productRepository.findByCategories_CategoryIdWithPrimaryImage(categoryObject.getCategoryId());
 		} else {
-			return productRepository.findAll();
+			return productRepository.findAllWithPrimaryImage();
 		}
 	}
 
-	public String getProductImgByProductId(int Product_id) {
-		return productImgRepository.findImageUrlByProductId(Product_id);
+	public List<ProductResponseDto> getProductDtosByCategoryId(String categoryName) {
+		List<Products> products = getProductsByCategoryId(categoryName);
+		return products.stream()
+				.map(ProductResponseDto::fromEntity)
+				.toList();
+	}
+
+	public String getProductImgByProductId(int productId) {
+		return productImgRepository.findImageUrlByProductId(productId);
 	}
 }
