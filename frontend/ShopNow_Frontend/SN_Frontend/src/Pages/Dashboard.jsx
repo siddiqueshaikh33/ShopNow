@@ -5,13 +5,13 @@ import { useContext, useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { toast } from "react-toastify";
 import CardSkeleton from "../Components/CardSkeleton";
-import Shirt from "../Assets/shirt.jpg";
-import Pants from "../Assets/pants.jpg";
-import Phones from "../Assets/phones.jpg";
-import Accessories from "../Assets/accesiores.jpg";
-import MobileAccessories from "../Assets/Mobile_Accessiores.jpg";
+import Shirt from "../assets/shirt.jpg";
+import Pants from "../assets/pants.jpg";
+import Phones from "../assets/Phones.jpg";
+import Accessories from "../assets/accesiores.jpg";
+import MobileAccessories from "../assets/Mobile_Accessiores.jpg";
 import Footer from "../Components/Footer";
-import logo from "../Assets/logo.jpg";
+import logo from "../assets/logo.jpg";
 
 function Dashboard() {
   const [products, setProducts] = useState([]);

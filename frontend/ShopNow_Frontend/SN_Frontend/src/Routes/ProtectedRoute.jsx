@@ -5,7 +5,7 @@ import axiosInstance from "../api/axiosInstance";
 import { UserContext } from "../Context/UserProvider";
 import { toast } from "react-toastify";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, requiredRole }) {
   const { user, loading, setLoading, setUser } = useContext(UserContext);
 
   useEffect(() => {
@@ -56,6 +56,11 @@ function ProtectedRoute({ children }) {
   if (!user) {
     toast.error("Access Denied. Please log in.");
     return <Navigate to="/login" replace />;
+  }
+
+  if (requiredRole && user.role !== requiredRole) {
+    toast.error("Unauthorized: Admin privileges required.");
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

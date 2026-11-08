@@ -76,6 +76,11 @@ Every decision entry must use this exact format:
 - In JPA `@Column(updatable = false)` tells Hibernate to omit the column from SQL `UPDATE` statements; it belongs on immutable creation timestamps (`created_at`), not modification timestamps (`updated_at`).
 - Spring MVC controllers require `@RequestParam` (`org.springframework.web.bind.annotation`) for query parameter binding; Spring Data's `@Param` is strictly for repository `@Query` methods.
 - Spring MVC request handler methods must be declared `public` for Spring's dispatching and proxying mechanisms to invoke them properly.
+- React Router v6/v7 `<Routes>` components strictly enforce that all immediate children are `<Route>` or `<React.Fragment>`; any stray string or text node triggers an unhandled invariant violation crash at runtime.
+- File path imports in frontend code must strictly match on-disk folder and file casing (e.g. `../assets/...`); Windows file systems mask casing discrepancies, but Linux, Docker, and CI/CD runners strictly enforce case sensitivity and fail with `ENOENT` on mismatched casing.
+- Client-side route protection requires both authentication (logged-in session check) and role-based authorization (e.g. `requiredRole === "ADMIN"`) to prevent unauthorized customer navigation to sensitive administrative UIs.
+- Frontend JSON request payload keys must strictly match backend DTO field names (e.g. `imgUrl` vs `imageUrl`); unmatched keys are silently dropped by Jackson deserialization unless configured with strict unknown property failure.
+- Centralizing API calls into a single configured `axiosInstance` reading `VITE_API_BASE_URL` with global `withCredentials: true` eliminates hardcoded hosts/ports, guarantees environment independence, and enforces architectural boundaries.
 
 # Archive
 

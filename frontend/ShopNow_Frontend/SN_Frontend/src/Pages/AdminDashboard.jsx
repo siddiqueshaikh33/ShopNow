@@ -3,9 +3,9 @@ import Navbar from "../Components/Navbar";
 import DashboardCard from "../Components/AdminDashboardCard";
 import PopupModal from "../Components/PopupModal";
 import { toast } from "react-toastify";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import Footer from "../Components/Footer";
-import logo from "../Assets/logo.jpg";
+import logo from "../assets/logo.jpg";
 
 import {
   PieChart,
@@ -43,14 +43,13 @@ function AdminDashboard() {
       price: parseFloat(price),
       stock: parseInt(stock),
       categoryId: parseInt(categoryId),
-      imageUrl,
+      imgUrl: imageUrl,
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:8080/admin/addProduct",
-        productData,
-        { withCredentials: true }
+      const response = await axiosInstance.post(
+        "/admin/addProduct",
+        productData
       );
 
       console.log("Product added successfully:", response.data);
@@ -76,9 +75,8 @@ function AdminDashboard() {
     console.log("Fetching product with ID:", productId);
     e.preventDefault();
     try {
-      const response = await axios.get(
-        `http://localhost:8080/admin/product/${productId}`,
-        { withCredentials: true }
+      const response = await axiosInstance.get(
+        `/admin/product/${productId}`
       );
 
       setProduct(response.data);
@@ -93,9 +91,8 @@ function AdminDashboard() {
   const handleFormDeletion = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.delete(
-        `http://localhost:8080/admin/deleteproduct/${productId}`,
-        { withCredentials: true }
+      const response = await axiosInstance.delete(
+        `/admin/deleteproduct/${productId}`
       );
       console.log("Product deleted successfully:", response.data);
       toast.success("Product deleted successfully");
@@ -119,9 +116,8 @@ function AdminDashboard() {
   const fetchUser = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.get(
-        `http://localhost:8080/admin/getDetails/${userId}`,
-        { withCredentials: true }
+      const response = await axiosInstance.get(
+        `/admin/getDetails/${userId}`
       );
       setUsername(response.data.username);
       setEmail(response.data.email);
@@ -147,10 +143,9 @@ function AdminDashboard() {
         role: Role,
       };
 
-      const response = await axios.put(
-        `http://localhost:8080/admin/updateUser/${userId}`,
-        updatedUserData,
-        { withCredentials: true }
+      const response = await axiosInstance.put(
+        `/admin/updateUser/${userId}`,
+        updatedUserData
       );
 
       console.log("User updated successfully:", response.data);
@@ -176,11 +171,10 @@ function AdminDashboard() {
     e.preventDefault();
 
     try {
-      const response = await axios.get(
-        "http://localhost:8080/admin/analytics/month",
+      const response = await axiosInstance.get(
+        "/admin/analytics/month",
         {
           params: { month: parseInt(month), year: parseInt(year) },
-          withCredentials: true,
         }
       );
 
@@ -216,11 +210,10 @@ function AdminDashboard() {
   const handleYearlyReportsForm = async (e) => {
     try {
       e.preventDefault();
-      const response = await axios.get(
-        "http://localhost:8080/admin/analytics/year",
+      const response = await axiosInstance.get(
+        "/admin/analytics/year",
         {
           params: { year: parseInt(e.target.year.value) },
-          withCredentials: true,
         }
       );
 

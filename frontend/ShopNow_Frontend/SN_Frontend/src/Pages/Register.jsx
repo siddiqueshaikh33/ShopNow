@@ -6,7 +6,7 @@ import axiosInstance from "../api/axiosInstance";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import Logo from "../Assets/logo.jpg";
+import Logo from "../assets/logo.jpg";
 
 function Register() {
   const el = useRef(null);

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import logo from "../Assets/logo.jpg";
+import logo from "../assets/logo.jpg";
 import { useContext } from "react";
 import { UserContext } from "../Context/UserProvider.jsx";
 import { useNavigate } from "react-router-dom";
