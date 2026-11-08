@@ -3,7 +3,6 @@ package com.example.demo.Filter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +13,12 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.example.demo.Entity.Role;
 import com.example.demo.Entity.Users;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.Services.AuthService;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -42,7 +43,6 @@ public class AuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String reqUrl = req.getRequestURI();
-        //LOGGER.info("JwtAuthFilter request: {} {}", req.getMethod(), reqUrl);
 
         if (reqUrl.startsWith("/oauth2") ||
             reqUrl.startsWith("/login/oauth2") ||
@@ -53,44 +53,51 @@ public class AuthFilter extends OncePerRequestFilter {
         }
 
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-        	resp.setStatus(HttpServletResponse.SC_OK);
+            resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
         String token = getAuthTokenFromCookies(req);
-       // LOGGER.warn("JWT token", token);
         if (token == null || !authService.verifyToken(token)) {
             LOGGER.warn("JWT Missing or Invalid");
-            chain.doFilter(req, resp); 
-            return;
-        }
-
-        String username = authService.extractUsername(token);
-      //  LOGGER.warn("username", username);
-        Optional<Users> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            LOGGER.warn("User not found for username {}", username);
             chain.doFilter(req, resp);
             return;
         }
 
-        Users user = userOptional.get();
-       // LOGGER.info("user ", user);
-        String role = user.getRole().name(); 
-     //   LOGGER.info("user Role ", role);
+        // Pure Stateless JWT Verification: claims are decoded in CPU RAM (0 DB queries)
+        Claims claims = authService.extractAllClaims(token);
+        String username = claims.getSubject();
+        String roleStr = claims.get("role", String.class);
+        Integer userId = claims.get("userId", Integer.class);
+
+        // Construct lightweight user object in memory for backward compatibility with existing controllers
+        Users user = new Users();
+        if (userId != null) {
+            user.setUser_id(userId);
+        }
+        user.setUsername(username);
+        if (roleStr != null) {
+            try {
+                user.setRole(Role.valueOf(roleStr));
+            } catch (Exception e) {
+                user.setRole(Role.CUSTOMER);
+            }
+        } else {
+            user.setRole(Role.CUSTOMER);
+        }
+
+        String role = user.getRole().name();
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
-                        user,  
+                        user,
                         null,
                         List.of(new SimpleGrantedAuthority(role))
                 );
 
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        
-        //LOGGER.info("user auth", user);
-        req.setAttribute("Authorized_User", user);
 
+        req.setAttribute("Authorized_User", user);
 
         chain.doFilter(req, resp);
     }

@@ -4,12 +4,12 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.AdminService.AdminAnalyticsService;
@@ -35,7 +35,7 @@ public class AdminAnalyticsController {
 	}
 	
 	@GetMapping("/analytics/month")
-	public ResponseEntity<Map<String, Object>> getAnalyticsDataByService(@Param("month") int month, @Param("year") long year, HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> getAnalyticsDataByService(@RequestParam(name = "month") int month, @RequestParam(name = "year") long year, HttpServletRequest request) {
 		log.info("i am running");
 		try {
 			 Users users = (Users) request.getAttribute("Authorized_User");
@@ -53,7 +53,7 @@ public class AdminAnalyticsController {
 	
 	
 	@GetMapping("/analytics/year")
-	public ResponseEntity<Map<String, Object>> getyearDayAnalytics(@Param("year") long year, HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> getyearDayAnalytics(@RequestParam(name = "year") long year, HttpServletRequest request) {
 		try {
 			log.info("i am running");
 			Users users = (Users) request.getAttribute("Authorized_User");

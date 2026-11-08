@@ -51,11 +51,31 @@ Every decision entry must use this exact format:
 - Where in code: `Products.java`, `OrderTransactionService.java`, `OrderService.java`, `OrderController.java`, `Cart.jsx`, `OrderServiceTest.java`, `OrderTransactionServiceTest.java`.
 - Revisit when: Daily concurrent checkouts exceed 100,000 orders/minute (requiring Redis distributed locks / Lua scripts).
 
+### D-002: Pure Stateless JWT Authentication Verification
+- Date: 2026-11-08
+- Status: Implemented
+- Problem: AuthFilter queried MySQL jwt_tokens and users tables on every single HTTP request (2 queries per request), bottlenecking the 10-connection HikariCP pool and degrading throughput under high traffic.
+- Options considered:
+  - Option A: Redis session cache. Reduces MySQL load but introduces an external stateful infrastructure dependency, cluster failover management, and network hops.
+  - Option B: Database-backed token checks with local caching. Stale cache invalidation complexity and still risks cache stampedes.
+  - Option C: Pure stateless JWT verification. Embed userId and role claims directly in the signed JWT payload and verify signature/expiration purely in CPU memory using the HMAC secret key.
+- Decision: Option C
+- Why chosen: Zero database queries per authenticated request (100% auth DB offload), zero external dependencies, CPU verification in ~0.01ms, horizontally scalable across instances without shared session state.
+- Why the others were NOT chosen: Option A introduces unnecessary infrastructure complexity for this project's scale; Option B still involves state synchronization issues.
+- Risks / known downsides of the chosen option: Immediate token invalidation before expiry requires an explicit token revocation denylist if desired; mitigated by keeping token expiry reasonable (1 hour) and clearing the client-side cookie on logout.
+- How to verify it works: Unit tests verifying claims extraction, signature verification in memory, expired/tampered token rejection, and zero database queries in AuthFilter.
+- Where in code: `AuthService.java`, `AuthFilter.java`, `AuthServiceTest.java`.
+- Revisit when: Strict immediate server-side revocation across devices is required prior to token expiration (requiring a distributed Redis blocklist or short-lived tokens with refresh token rotation).
+
 # Open items / backlog
 
 # Concepts learned
 - Spring AOP proxy self-invocation bypasses `@Transactional` when calling methods inside the same bean; separate worker services or external proxy calls are required for new transaction boundaries.
 - Hibernate L1 (First-Level) cache retains in-memory entity versions across a single transaction; retry loops must execute across fresh transaction boundaries (`REQUIRES_NEW`) to clear the session and read fresh database rows.
+- Pure stateless JWT verification uses cryptographic HMAC-SHA256 signature checks and in-token claims in CPU RAM, completely avoiding database queries on every authenticated request.
+- In JPA `@Column(updatable = false)` tells Hibernate to omit the column from SQL `UPDATE` statements; it belongs on immutable creation timestamps (`created_at`), not modification timestamps (`updated_at`).
+- Spring MVC controllers require `@RequestParam` (`org.springframework.web.bind.annotation`) for query parameter binding; Spring Data's `@Param` is strictly for repository `@Query` methods.
+- Spring MVC request handler methods must be declared `public` for Spring's dispatching and proxying mechanisms to invoke them properly.
 
 # Archive
 

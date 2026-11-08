@@ -32,7 +32,7 @@ public class AdminDeleteController {
 	}
     
 	@GetMapping("/product/{productId}")
-	private ResponseEntity<?> findProduct(@PathVariable int productId, HttpServletRequest request) {
+	public ResponseEntity<?> findProduct(@PathVariable int productId, HttpServletRequest request) {
 		try {
 		Users users = (Users) request.getAttribute("Authorized_User");
 		
@@ -51,7 +51,7 @@ public class AdminDeleteController {
 	}
    
 	@DeleteMapping("/deleteproduct/{productId}")
-	private ResponseEntity<?> deleteProduct(@PathVariable int productId, HttpServletRequest request) {
+	public ResponseEntity<?> deleteProduct(@PathVariable int productId, HttpServletRequest request) {
 		try {
 		Users users = (Users) request.getAttribute("Authorized_User");
 		

@@ -39,10 +39,10 @@ public class Orders {
 	  @Column(nullable = false)
 	private Status status;
 
-	  @Column(nullable = false, updatable = false)
+	  @Column(nullable = false)
 	  private LocalDateTime updated_at;
 
-      @Column(nullable = false)
+      @Column(nullable = false, updatable = false)
 	  private LocalDateTime created_at;
 	  
       @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
