@@ -9,7 +9,7 @@ public record ProductResponseDto(
     String name,
     String description,
     BigDecimal price,
-    String stock,
+    Integer stock,
     String product_img
 ) {
     public static ProductResponseDto fromEntity(Products product) {

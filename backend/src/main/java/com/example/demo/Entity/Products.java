@@ -18,6 +18,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Entity
 @Table
@@ -37,7 +38,11 @@ public class Products {
 
     
     @Column(nullable = false)
-    private String stock;
+    private Integer stock = 0;
+    
+    @Version
+    @Column(nullable = false)
+    private Long version = 0L;
     
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -82,7 +87,7 @@ public class Products {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Products(String name, String description, BigDecimal price, String stock, Categories categories,
+	public Products(String name, String description, BigDecimal price, Integer stock, Categories categories,
 			LocalDateTime created_at, LocalDateTime updated_at) {
 		super();
 		this.name = name;
@@ -92,6 +97,11 @@ public class Products {
 		this.categories = categories;
 		this.created_at = created_at;
 		this.updated_at = updated_at;
+	}
+
+	public Products(String name, String description, BigDecimal price, String stock, Categories categories,
+			LocalDateTime created_at, LocalDateTime updated_at) {
+		this(name, description, price, stock != null ? Integer.parseInt(stock) : 0, categories, created_at, updated_at);
 	}
 	
 	
@@ -135,12 +145,24 @@ public class Products {
 		this.price = price;
 	}
 
-	public String getStock() {
+	public Integer getStock() {
 		return stock;
 	}
 
-	public void setStock(String stock) {
+	public void setStock(Integer stock) {
 		this.stock = stock;
+	}
+
+	public void setStock(String stock) {
+		this.stock = (stock != null) ? Integer.parseInt(stock) : 0;
+	}
+
+	public Long getVersion() {
+		return version;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
 	}
 
 	public Categories getCategories() {

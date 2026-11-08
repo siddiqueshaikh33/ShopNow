@@ -54,6 +54,7 @@ Always run the relevant test + lint/build command before saying a task is done.
 - New feature or bug fix = at least one test.
 
 ## Boundaries
+- Read DECISIONS.md before changing code in areas that have an entry, and update it whenever a design decision is made. Keep all decisions, backlog items, and learning notes in that one file.
 - Do not edit `.env*`, lockfiles by hand, or build output (`/dist`, `/target`).
 - Ask before adding a new dependency or changing the DB schema.
 - Don't delete or rewrite existing tests to make them pass.

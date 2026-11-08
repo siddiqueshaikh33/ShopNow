@@ -1,30 +1,25 @@
 package com.example.demo.Services;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Dto.CreateOrderRequest;
-import com.example.demo.Dto.OrderItemRequest;
-import com.example.demo.Entity.CartItems;
 import com.example.demo.Entity.OrderItems;
 import com.example.demo.Entity.Orders;
-import com.example.demo.Entity.Products;
 import com.example.demo.Entity.Status;
 import com.example.demo.Entity.Users;
 import com.example.demo.Repository.CartItemRepository;
 import com.example.demo.Repository.OrderItemsRepository;
 import com.example.demo.Repository.OrderRepo;
 import com.example.demo.Repository.ProductRepository;
-import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 
@@ -32,6 +27,9 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class OrderService {
+
+	private static final Logger log = LoggerFactory.getLogger(OrderService.class);
+	private static final int MAX_RETRIES = 3;
 
 	@Value("${razorpay.key_id}")
 	String razorpayKeyId;
@@ -43,81 +41,95 @@ public class OrderService {
 	private final OrderRepo orderRepo;
 	private final CartItemRepository cartItemRepository;
 	private final ProductRepository productRepository;
+	private final OrderTransactionService orderTransactionService;
 
 	public OrderService(OrderItemsRepository orderItemsRepository, OrderRepo orderRepo,
-			CartItemRepository cartItemRepository, ProductRepository productRepository) {
+			CartItemRepository cartItemRepository, ProductRepository productRepository,
+			OrderTransactionService orderTransactionService) {
 		super();
 		this.orderItemsRepository = orderItemsRepository;
 		this.orderRepo = orderRepo;
 		this.cartItemRepository = cartItemRepository;
 		this.productRepository = productRepository;
+		this.orderTransactionService = orderTransactionService;
 	}
 
 	protected RazorpayClient createRazorpayClient() throws RazorpayException {
 		return new RazorpayClient(razorpayKeyId, razorpaySecret);
 	}
 
-	@Transactional
-	public String createOrder(Users user, CreateOrderRequest request) throws RazorpayException {
-		if (request == null || request.items() == null || request.items().isEmpty()) {
-			throw new IllegalArgumentException("Order items cannot be empty");
+	protected boolean verifyPaymentSignature(JSONObject payload, String secret) {
+		try {
+			return com.razorpay.Utils.verifyPaymentSignature(payload, secret);
+		} catch (RazorpayException e) {
+			return false;
 		}
-
-		List<Integer> productIds = request.items().stream()
-				.map(OrderItemRequest::productId)
-				.distinct()
-				.toList();
-
-		Map<Integer, Products> productMap = productRepository.findAllById(productIds).stream()
-				.collect(Collectors.toMap(Products::getProduct_id, Function.identity()));
-
-		BigDecimal serverCalculatedTotal = BigDecimal.ZERO;
-
-		for (OrderItemRequest item : request.items()) {
-			if (item == null) {
-				throw new IllegalArgumentException("Order item cannot be null");
-			}
-			if (item.quantity() <= 0) {
-				throw new IllegalArgumentException("Quantity must be greater than zero for product ID: " + item.productId());
-			}
-			Products product = productMap.get(item.productId());
-			if (product == null) {
-				throw new IllegalArgumentException("Product not found with ID: " + item.productId());
-			}
-			BigDecimal unitPrice = product.getPrice();
-			if (unitPrice == null) {
-				throw new IllegalStateException("Product price not configured for ID: " + item.productId());
-			}
-			BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(item.quantity()));
-			serverCalculatedTotal = serverCalculatedTotal.add(itemTotal);
-		}
-
-		RazorpayClient razorpayClient = createRazorpayClient();
-
-		JSONObject preparePayload = new JSONObject();
-		preparePayload.put("amount", serverCalculatedTotal.multiply(BigDecimal.valueOf(100)).intValue());
-		preparePayload.put("currency", "INR");
-		preparePayload.put("receipt", "txn_" + System.currentTimeMillis());
-
-		Order razorpayorder = razorpayClient.orders.create(preparePayload);
-
-		Orders order = new Orders();
-		order.setId(razorpayorder.get("id"));
-		order.setUser(user);
-		order.setTotal_amount(serverCalculatedTotal);
-		order.setStatus(Status.PENDING);
-
-		orderRepo.save(order);
-		return razorpayorder.get("id");
 	}
-	
-	@Scheduled(cron = "0 0 0 * * ?")	
-    public void handleOrderPendingDeletion() {
-    	 LocalDateTime sevenDayAgoDateTime = LocalDateTime.now().minusDays(7);
-    	 Status status = Status.PENDING;
-    	 int deletedCount = orderRepo.deletePendingStatus(status, sevenDayAgoDateTime);
-    	 System.out.println("Deleted " + deletedCount + " pending orders older than 7 days");
-    }
+
+	public String createOrder(Users user, CreateOrderRequest request) throws RazorpayException {
+		RazorpayClient razorpayClient = createRazorpayClient();
+		int attempt = 0;
+
+		while (attempt < MAX_RETRIES) {
+			attempt++;
+			try {
+				return orderTransactionService.executeOrderCreation(user, request, razorpayClient);
+			} catch (OptimisticLockingFailureException ex) {
+				log.warn("⚠️ Optimistic lock conflict on checkout attempt {} of {}: {}", attempt, MAX_RETRIES, ex.getMessage());
+				if (attempt >= MAX_RETRIES) {
+					log.error("❌ Checkout failed after {} attempts due to concurrent updates", MAX_RETRIES);
+					throw ex;
+				}
+				try {
+					Thread.sleep(50L * attempt);
+				} catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+					throw ex;
+				}
+			}
+		}
+		throw new IllegalStateException("Failed to complete order creation after retries");
+	}
+
+	public void cancelOrder(String orderId, Users user) {
+		Orders order = orderRepo.findById(orderId)
+				.orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+
+		if (order.getUser() == null || order.getUser().getUser_id() != user.getUser_id()) {
+			throw new RuntimeException("Unauthorized order access");
+		}
+
+		orderTransactionService.cancelAndRestoreStock(orderId);
+	}
+
+	@Scheduled(fixedRate = 60000)
+	public void cancelExpiredPendingOrders() {
+		LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(15);
+		List<Orders> expiredOrders = orderRepo.findPendingOrdersBefore(Status.PENDING, cutoffTime);
+		for (Orders order : expiredOrders) {
+			try {
+				orderTransactionService.cancelAndRestoreStock(order.getId());
+				log.info("⏰ Auto-cancelled expired pending order {} and restored stock", order.getId());
+			} catch (Exception e) {
+				log.error("Failed to auto-cancel pending order {}", order.getId(), e);
+			}
+		}
+	}
+
+	@Scheduled(cron = "0 0 0 * * ?")
+	@Transactional
+	public void handleOrderPendingDeletion() {
+		LocalDateTime sevenDayAgoDateTime = LocalDateTime.now().minusDays(7);
+		Status status = Status.PENDING;
+
+		// 1. Delete child order items first to avoid foreign key constraint failure
+		int deletedItemsCount = orderItemsRepository.deleteByOrdersStatusAndCreatedAtBefore(status, sevenDayAgoDateTime);
+
+		// 2. Safely delete parent pending orders
+		int deletedCount = orderRepo.deletePendingStatus(status, sevenDayAgoDateTime);
+
+		log.info("Deleted {} pending orders and {} order items older than 7 days", deletedCount, deletedItemsCount);
+	}
 
 	@Transactional
 	public boolean verifyOrder(String razorpayPaymentId, String razorpayOrderId, String razorpaySignature, Users user) {
@@ -127,45 +139,35 @@ public class OrderService {
 			payload.put("razorpay_order_id", razorpayOrderId);
 			payload.put("razorpay_signature", razorpaySignature);
 
-			boolean verifySignature;
-
-			verifySignature = com.razorpay.Utils.verifyPaymentSignature(payload, razorpaySecret);
+			boolean verifySignature = verifyPaymentSignature(payload, razorpaySecret);
 
 			if (verifySignature) {
 				Orders order = orderRepo.findById(razorpayOrderId)
 						.orElseThrow(() -> new RuntimeException("Order not found!"));
 
-				if (order.getUser().getUser_id() !=   user.getUser_id()) {
-					throw new RuntimeException("Unauthorize order access");
+				if (order.getUser().getUser_id() != user.getUser_id()) {
+					throw new RuntimeException("Unauthorized order access");
 				}
+
 				order.setStatus(Status.SUCCESS);
 				orderRepo.save(order);
 
-				List<CartItems> cartList = cartItemRepository.fetchAllCartItems(user.getUser_id());
+				List<OrderItems> orderItems = orderItemsRepository.findByOrders_Id(razorpayOrderId);
+				List<Integer> purchasedProductIds = orderItems.stream()
+						.map(oi -> oi.getProducts().getProduct_id())
+						.distinct()
+						.toList();
 
-				List<OrderItems> orderItemsList = cartList.stream().map(item -> {
-					OrderItems orderItems = new OrderItems();
-					orderItems.setOrders(order);
-					orderItems.setProducts(item.getProduct());
-					orderItems.setQuantity(item.getQuantity());
-					orderItems.setPricePerUnit(item.getProduct().getPrice());
+				if (!purchasedProductIds.isEmpty()) {
+					cartItemRepository.deleteCartItemsByUserIdAndProductIds(user.getUser_id(), purchasedProductIds);
+				}
 
-					BigDecimal totalPrice = item.getProduct().getPrice()
-							.multiply(BigDecimal.valueOf(item.getQuantity()));
-					orderItems.setTotalPrice(totalPrice);
-
-					return orderItems;
-				}).toList();
-
-				orderItemsRepository.saveAll(orderItemsList); // ✅ batch save
-
-				cartItemRepository.deleteAll(cartList);
 				return true;
 			} else {
 				return false;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Payment verification error", e);
 			return false;
 		}
 	}

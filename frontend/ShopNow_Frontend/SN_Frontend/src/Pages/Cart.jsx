@@ -95,6 +95,21 @@ function Cart() {
           sendPaymentDetailsToServer(response);
         },
 
+        modal: {
+          ondismiss: async function () {
+            try {
+              await axiosInstance.post(
+                "/payment/cancel",
+                { orderId: razorpayOrderId },
+                { withCredentials: true }
+              );
+              toast.info("Payment cancelled. Reserved items have been released.");
+            } catch (err) {
+              console.error("Failed to cancel order on modal dismiss:", err);
+            }
+          },
+        },
+
         prefill: {
           name: user.username,
           email: user.email,
@@ -109,7 +124,13 @@ function Cart() {
       rzp.open();
       setClick(false);
     } catch (error) {
-      toast.error("Failed to initiate payment");
+      const errorMessage =
+        error.response?.data || "Failed to initiate payment";
+      toast.error(
+        typeof errorMessage === "string"
+          ? errorMessage
+          : "Failed to initiate payment"
+      );
       setClick(false);
     }
   };

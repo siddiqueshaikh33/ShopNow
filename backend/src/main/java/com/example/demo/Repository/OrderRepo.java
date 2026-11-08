@@ -36,6 +36,9 @@ public interface OrderRepo extends JpaRepository<Orders, String>{
 	       @Query("delete from Orders o where o.status = :status and o.created_at < :dueDateTime")
 	       int deletePendingStatus(@Param("status") Status status, @Param("dueDateTime") LocalDateTime dueDateTime);
 	       
+	       @Query("SELECT o FROM Orders o WHERE o.status = :status AND o.created_at < :dueDateTime")
+	       List<Orders> findPendingOrdersBefore(@Param("status") Status status, @Param("dueDateTime") LocalDateTime dueDateTime);
+	       
 	       
 	       
 	       @Query("""

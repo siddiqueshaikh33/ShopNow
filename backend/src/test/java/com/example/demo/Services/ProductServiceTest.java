@@ -48,7 +48,7 @@ class ProductServiceTest {
 		productWithImage.setName("Wireless Mouse");
 		productWithImage.setDescription("Ergonomic wireless mouse");
 		productWithImage.setPrice(new BigDecimal("29.99"));
-		productWithImage.setStock("50");
+		productWithImage.setStock(50);
 
 		Productimages image = new Productimages();
 		image.setImageUrl("https://example.com/mouse.jpg");
@@ -58,7 +58,7 @@ class ProductServiceTest {
 		productWithoutImage.setName("USB Cable");
 		productWithoutImage.setDescription("Type-C 1m cable");
 		productWithoutImage.setPrice(new BigDecimal("9.99"));
-		productWithoutImage.setStock("100");
+		productWithoutImage.setStock(100);
 	}
 
 	@Test
