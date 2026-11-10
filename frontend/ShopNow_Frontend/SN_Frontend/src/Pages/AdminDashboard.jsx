@@ -237,8 +237,8 @@ function AdminDashboard() {
         showProfile={true}
         dashboardPath="/admindashboard"
       />
-      <h1 className="font-bold text-3xl m-6 ml-10">Admin Dashboard</h1>
-      <div className="admin-dashboard-container grid grid-cols-2 gap-4 m-10 flex flex-wrap justify-center">
+      <h1 className="font-bold text-2xl sm:text-3xl m-4 sm:m-6 sm:ml-10">Admin Dashboard</h1>
+      <div className="admin-dashboard-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 m-4 sm:m-6 lg:m-10 justify-center">
         {/* 1) Add Product */}
         <DashboardCard
           buttonText="+ Add Product"
@@ -588,30 +588,32 @@ function AdminDashboard() {
 
               <p className="font-semibold mb-4">Total Amount: ₹{totalAmount}</p>
               {categoryData.length > 0 ? (
-                <PieChart width={400} height={300}>
-                  <Pie
-                    data={categoryData.map((item) => ({
-                      name: item.category,
-                      value: item.categoryCount,
-                    }))}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    label
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
+                <div className="w-full flex justify-center overflow-x-auto">
+                  <PieChart width={360} height={280}>
+                    <Pie
+                      data={categoryData.map((item) => ({
+                        name: item.category,
+                        value: item.categoryCount,
+                      }))}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      label
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
 
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </div>
               ) : (
                 <div className="flex justify-center">
                   <p className="font-semibold text-gray-600">
@@ -654,9 +656,9 @@ function AdminDashboard() {
               </button>
             </form>
           ) : (
-            <div className="flex justify-start mt-10">
+            <div className="flex justify-start mt-6 sm:mt-10">
               {reportYear.length > 0 ? (
-                <div style={{ width: "50%", height: 350 }}>
+                <div style={{ width: "100%", height: 350 }}>
                   <ResponsiveContainer>
                     <BarChart
                       data={reportYear.map((item, index) => ({

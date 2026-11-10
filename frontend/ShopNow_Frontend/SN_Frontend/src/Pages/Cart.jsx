@@ -165,8 +165,8 @@ function Cart() {
     <div className="min-h-screen bg-gray-100">
       <Navbar user={user ? user.username : "Guest"} />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="text-5xl font-bold mb-7">Shopping Cart</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 sm:mb-7">Shopping Cart</h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex-1">
@@ -180,7 +180,7 @@ function Cart() {
                 />
               </div>
             ) : cartItems.length > 0 ? (
-              <div className="space-y-4 mr-10">
+              <div className="space-y-4 mr-0 lg:mr-10">
                 {cartItems.map((item) => (
                   <CartItems
                     key={item.product_id}
@@ -191,7 +191,7 @@ function Cart() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600 text-4xl flex font-semibold justify-center items-center h-57">
+              <p className="text-gray-600 text-2xl sm:text-4xl flex font-semibold justify-center items-center h-57 text-center px-4">
                 Your cart is empty 🛒
               </p>
             )}
@@ -200,7 +200,7 @@ function Cart() {
           {/* RIGHT */}
           {!loading && cartItems.length > 0 && (
             <div className="w-full lg:w-1/3">
-              <div className="bg-white rounded-xl shadow-sm border p-6 sticky top-24">
+              <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6 lg:sticky lg:top-24">
                 <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
 
                 <div className="space-y-4 text-gray-700">

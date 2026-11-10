@@ -60,7 +60,7 @@ function CartItems({ item, updateCart, deleteCart }) {
   };
 
   return (
-    <div className="w-full bg-white flex items-center gap-6 p-5 mb-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative">
+    <div className="w-full bg-white flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6 p-4 sm:p-5 mb-4 sm:mb-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative">
       {/* Remove Button */}
       <button
         className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-red-500 hover:text-white transition"
@@ -71,7 +71,7 @@ function CartItems({ item, updateCart, deleteCart }) {
       </button>
 
       {/* Product Image */}
-      <div className="w-36 h-36 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+      <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
         <img
           src={item.product_img}
           alt={item.product_name}
@@ -81,19 +81,19 @@ function CartItems({ item, updateCart, deleteCart }) {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 justify-between h-full">
+      <div className="flex flex-col flex-1 justify-between w-full h-full">
         {/* Product Info */}
         <div>
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 pr-8 sm:pr-0">
             {item.product_name}
           </h3>
-          <p className="text-md text-gray-600 line-clamp-2">
+          <p className="text-sm sm:text-md text-gray-600 line-clamp-2">
             {item.product_description}
           </p>
         </div>
 
         {/* Bottom Section */}
-        <div className="flex items-end justify-between mt-3">
+        <div className="flex items-end justify-between mt-3 w-full">
           {/* Quantity Controls */}
           <div className="flex items-center gap-3">
             <button

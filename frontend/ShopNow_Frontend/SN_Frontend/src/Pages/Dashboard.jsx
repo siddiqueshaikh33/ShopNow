@@ -104,7 +104,7 @@ function Dashboard() {
             <h2 className="text-2xl font-bold mb-4 flex justify-center">
               Get A Great Deal
             </h2>
-            <div className="flex gap-7 overflow-x-auto py-2 justify-center">
+            <div className="flex gap-4 sm:gap-7 overflow-x-auto py-2 px-2 justify-start md:justify-center">
               {categories.map((cat) => (
                 <button
                   key={cat.name}
@@ -114,9 +114,9 @@ function Dashboard() {
                   <img
                     src={cat.img}
                     alt={cat.name}
-                    className="h-24 w-24 rounded-full object-cover mb-1"
+                    className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover mb-1"
                   />
-                  <span className="font-semibold">{cat.name}</span>
+                  <span className="font-semibold text-sm sm:text-base">{cat.name}</span>
                 </button>
               ))}
             </div>
@@ -124,7 +124,7 @@ function Dashboard() {
         )}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-6 p-2 w-auto">
+      <div className="flex flex-wrap justify-center gap-4 sm:gap-6 p-2 sm:p-4 w-auto">
         {loading
           ? [...Array(15)].map((_, i) => <CardSkeleton key={i} />)
           : products.map((product) => (

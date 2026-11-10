@@ -38,9 +38,9 @@ function Order() {
     <div className="min-h-screen bg-gray-100">
       <Navbar />
 
-      <div className="flex justify-around items-start mt-10 px-10 gap-10">
+      <div className="flex flex-col lg:flex-row justify-around items-start mt-6 sm:mt-10 px-4 sm:px-6 lg:px-10 gap-6 lg:gap-10">
         {/* LEFT SIDE – THANK YOU MESSAGE */}
-        <div className="w-1/2 sticky top-36 self-start ">
+        <div className="w-full lg:w-1/2 lg:sticky lg:top-36 self-start">
           <button
             className="px-6 py-3 rounded-lg
              bg-green-600 text-white font-medium
@@ -51,18 +51,18 @@ function Order() {
             Continue Shopping
           </button>
 
-          <h1 className="text-5xl font-semibold text-green-600 mt-10">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-green-600 mt-6 sm:mt-10">
             🎉 Thank You for Your Order!
           </h1>
 
-          <p className="text-gray-600 text-lg p-4 bg-green-50 border border-green-500 rounded-lg mt-6">
+          <p className="text-gray-600 text-base sm:text-lg p-4 bg-green-50 border border-green-500 rounded-lg mt-6">
             Your order has been placed successfully. We’ll notify you once your
             items are shipped.
           </p>
         </div>
 
         {/* RIGHT SIDE – ORDER ITEM CARDS */}
-        <div className="w-1/2  h-auto">
+        <div className="w-full lg:w-1/2 h-auto">
           <h2 className="text-2xl font-medium mb-4">🛒 Order Items</h2>
 
           {data.length > 0 ? (
@@ -70,21 +70,21 @@ function Order() {
               {data.map((item) => (
                 <div
                   key={item.product_id}
-                  className="flex gap-4 items-center p-5 rounded-xl
-             bg-white border border-gray-100
+                  className="flex flex-col sm:flex-row gap-4 items-center p-4 sm:p-5 rounded-xl
+             bg-white border border-gray-200
              shadow-md hover:shadow-lg
              hover:-translate-y-0.5
-             transition-all duration-300  border border-gray-200 "
+             transition-all duration-300"
                 >
                   {/* PRODUCT IMAGE */}
                   <img
                     src={item.product_img}
                     alt={item.name}
-                    className="w-30 h-28 object-cover rounded-md mx-8"
+                    className="w-28 h-28 object-cover rounded-md mx-auto sm:mx-4 flex-shrink-0"
                   />
 
                   {/* PRODUCT DETAILS */}
-                  <div className="flex-1 ml-2">
+                  <div className="flex-1 w-full text-center sm:text-left sm:ml-2">
                     <h3 className="text-xl font-semibold">
                       {item.product_name}
                     </h3>

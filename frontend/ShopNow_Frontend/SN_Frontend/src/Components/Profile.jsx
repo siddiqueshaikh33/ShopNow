@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import logo from "../assets/logo.jpg";
-import { useContext } from "react";
 import { UserContext } from "../Context/UserProvider.jsx";
 import { useNavigate } from "react-router-dom";
 
@@ -28,15 +27,15 @@ function Profile({ handleLogout }) {
   return (
     <div className="relative inline-block" ref={menuRef}>
       <div
-        className="flex border rounded-full bg-white cursor-pointer"
+        className="flex border rounded-full bg-white cursor-pointer items-center"
         onClick={() => setOpen(!open)}
       >
         <img
           src={logo}
           alt="logo"
-          className="w-8 h-8 rounded-full object-cover m-2"
+          className="w-8 h-8 rounded-full object-cover m-1 sm:m-2"
         />
-        <p className="m-2 p-1 text-black font-semibold">
+        <p className="m-1 sm:m-2 p-1 text-black font-semibold max-w-[90px] sm:max-w-[140px] truncate text-sm sm:text-base">
           {loading ? "Loading..." : user ? user.username : "Guest"}
         </p>
       </div>
@@ -52,7 +51,7 @@ function Profile({ handleLogout }) {
             >
               Logout...
             </button>
-            {user.role == "CUSTOMER" ? (
+            {user?.role == "CUSTOMER" ? (
               <button
                 className="w-full px-4 py-2 hover:bg-blue-400 text-black font-semibold"
                 onClick={navigateOrder}

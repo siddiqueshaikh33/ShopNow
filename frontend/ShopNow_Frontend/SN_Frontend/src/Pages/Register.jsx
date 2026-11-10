@@ -128,7 +128,7 @@ function Register() {
     <div
       className="min-h-screen w-full flex flex-col lg:flex-row 
 items-center justify-center lg:justify-around 
-px-4 lg:px-20 gap-8
+px-4 lg:px-20 py-6 sm:py-10 gap-8
 bg-gradient-to-r from-[#ADEFD1] via-[#7FD8BE] to-[#ADEFD1]
 bg-[length:400%_400%] animate-gradient"
     >
