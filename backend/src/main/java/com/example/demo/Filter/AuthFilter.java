@@ -106,8 +106,10 @@ public class AuthFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return null;
 
+        // Prioritize "accessToken", fallback to legacy "token"
         return Arrays.stream(cookies)
-                .filter(cookie -> "token".equals(cookie.getName()))
+                .filter(cookie -> "accessToken".equals(cookie.getName()) || "token".equals(cookie.getName()))
+                .sorted((c1, c2) -> "accessToken".equals(c1.getName()) ? -1 : 1)
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);

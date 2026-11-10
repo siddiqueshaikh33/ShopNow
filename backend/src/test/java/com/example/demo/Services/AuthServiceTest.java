@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -122,5 +123,101 @@ class AuthServiceTest {
         // Assert zero DB writes or reads
         verify(jwtRepository, never()).save(any());
         verify(jwtRepository, never()).findByUserId(anyInt());
+    }
+
+    @Test
+    @DisplayName("Should authenticate user with valid BCrypt password")
+    void testAuthenticate_Success_BCrypt() {
+        Users user = new Users();
+        user.setUser_id(1);
+        user.setUsername("alice");
+        user.setPassword("$2a$10$encryptedHashPasswordExample12345678901234567890");
+
+        when(userRepository.findByUsername("alice")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches("secretPassword", user.getPassword())).thenReturn(true);
+
+        Users authenticated = authService.authenicate("alice", "secretPassword");
+
+        assertNotNull(authenticated);
+        assertEquals("alice", authenticated.getUsername());
+        verify(passwordEncoder).matches("secretPassword", "$2a$10$encryptedHashPasswordExample12345678901234567890");
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when BCrypt password does not match")
+    void testAuthenticate_InvalidPassword_BCrypt() {
+        Users user = new Users();
+        user.setUsername("alice");
+        user.setPassword("$2a$10$encryptedHashPasswordExample12345678901234567890");
+
+        when(userRepository.findByUsername("alice")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches("wrongPassword", user.getPassword())).thenReturn(false);
+
+        RuntimeException ex = org.junit.jupiter.api.Assertions.assertThrows(
+                RuntimeException.class,
+                () -> authService.authenicate("alice", "wrongPassword")
+        );
+
+        assertEquals("Invalid Password", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when user is not found in database")
+    void testAuthenticate_UserNotFound() {
+        when(userRepository.findByUsername("unknown")).thenReturn(java.util.Optional.empty());
+
+        RuntimeException ex = org.junit.jupiter.api.Assertions.assertThrows(
+                RuntimeException.class,
+                () -> authService.authenicate("unknown", "anyPass")
+        );
+
+        assertEquals("Invalid Username or No User Found Please Register", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should migrate plaintext password to BCrypt and save user")
+    void testAuthenticate_PlaintextPasswordMigration() {
+        Users user = new Users();
+        user.setUser_id(3);
+        user.setUsername("legacyUser");
+        user.setPassword("plainText123");
+
+        when(userRepository.findByUsername("legacyUser")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.encode("plainText123")).thenReturn("$2a$10$newlyHashedBCryptValue");
+
+        Users authenticated = authService.authenicate("legacyUser", "plainText123");
+
+        assertNotNull(authenticated);
+        assertEquals("$2a$10$newlyHashedBCryptValue", user.getPassword());
+        verify(passwordEncoder).encode("plainText123");
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    @DisplayName("Should create refreshToken cookie with path /api/auth, HttpOnly, and Strict SameSite")
+    void testCreateRefreshTokenCookie_PathAndSecurityAttributes() {
+        org.springframework.http.ResponseCookie cookie = authService.createRefreshTokenCookie("sample-raw-token");
+
+        assertNotNull(cookie);
+        assertEquals("refreshToken", cookie.getName());
+        assertEquals("sample-raw-token", cookie.getValue());
+        assertEquals("/api/auth", cookie.getPath());
+        assertTrue(cookie.isHttpOnly());
+        assertEquals("Strict", cookie.getSameSite());
+        assertEquals(java.time.Duration.ofDays(7), cookie.getMaxAge());
+    }
+
+    @Test
+    @DisplayName("Should clear refreshToken cookie with matching path /api/auth and maxAge 0")
+    void testClearRefreshTokenCookie_MatchingPathAndMaxAgeZero() {
+        org.springframework.http.ResponseCookie cookie = authService.clearRefreshTokenCookie();
+
+        assertNotNull(cookie);
+        assertEquals("refreshToken", cookie.getName());
+        assertEquals("", cookie.getValue());
+        assertEquals("/api/auth", cookie.getPath());
+        assertTrue(cookie.isHttpOnly());
+        assertEquals(java.time.Duration.ZERO, cookie.getMaxAge());
     }
 }

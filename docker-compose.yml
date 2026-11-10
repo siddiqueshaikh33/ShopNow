@@ -1,0 +1,66 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: shopnow-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: pass123
+      MYSQL_DATABASE: shopnow
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppass123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - shopnow-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shopnow-backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/shopnow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: root
+      DB_PASSWORD: pass123
+      JWT_SECERT: your-long-production-jwt-secret-code-user-to-authenticate-by-creating-jwt-token-12345678901234567890
+      JWT_EXP: "3600000"
+      RAZORPAY_ID: rzp_test_S2U9gv9j73J8pb
+      RAZORPAY_SECERT: fw8VzYtunqfnfN3R90FMCBHx
+      GOOGLE_ID: 385419819892-bag09tesu02v5lg5o7oc1vss59dbcl0d.apps.googleusercontent.com
+      GOOGLE_SECRET: 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
+    ports:
+      - "8080:8080"
+    networks:
+      - shopnow-network
+
+  frontend:
+    build:
+      context: ./frontend/ShopNow_Frontend/SN_Frontend
+      dockerfile: Dockerfile
+    container_name: shopnow-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    networks:
+      - shopnow-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  shopnow-network:
+    driver: bridge
+

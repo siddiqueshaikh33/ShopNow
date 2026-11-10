@@ -2,11 +2,14 @@ package com.example.demo.Services;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -80,7 +83,7 @@ public class AuthService {
 				.claim("userId", userId)
 				.claim("role", role)
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + (60 * 60 * 1000))) // 1 hour validity
+				.setExpiration(new Date(System.currentTimeMillis() + (15 * 60 * 1000))) // 15 minutes validity
 				.signWith(Secret_Key, SignatureAlgorithm.HS256)
 				.compact();
 	}
@@ -94,15 +97,69 @@ public class AuthService {
 		return createNewCookie(user.getUser_id(), user.getUsername(), user.getRole().name());
 	}
 
-	public void addCookietoClient(HttpServletResponse response, String token) {
-		Cookie cookie = new Cookie("token", token);
-		cookie.setPath("/");
-		cookie.setMaxAge(3600);
-		cookie.setHttpOnly(true);
-		cookie.setDomain("localhost");
-		cookie.setSecure(false);
+	public ResponseCookie createAccessTokenCookie(String token) {
+		return ResponseCookie.from("accessToken", token)
+				.path("/")
+				.maxAge(Duration.ofMinutes(15))
+				.httpOnly(true)
+				.sameSite("Lax")
+				.secure(false)
+				.build();
+	}
 
-		response.addCookie(cookie);
+	public ResponseCookie createRefreshTokenCookie(String rawRefreshToken) {
+		return ResponseCookie.from("refreshToken", rawRefreshToken)
+				.path("/api/auth")
+				.maxAge(Duration.ofDays(7))
+				.httpOnly(true)
+				.sameSite("Strict")
+				.secure(false)
+				.build();
+	}
+
+	public ResponseCookie clearAccessTokenCookie() {
+		return ResponseCookie.from("accessToken", "")
+				.path("/")
+				.maxAge(0)
+				.httpOnly(true)
+				.sameSite("Lax")
+				.secure(false)
+				.build();
+	}
+
+	public ResponseCookie clearRefreshTokenCookie() {
+		return ResponseCookie.from("refreshToken", "")
+				.path("/api/auth")
+				.maxAge(0)
+				.httpOnly(true)
+				.sameSite("Strict")
+				.secure(false)
+				.build();
+	}
+
+	public ResponseCookie clearLegacyTokenCookie() {
+		return ResponseCookie.from("token", "")
+				.path("/")
+				.maxAge(0)
+				.httpOnly(true)
+				.sameSite("Lax")
+				.secure(false)
+				.build();
+	}
+
+	public void addCookietoClient(HttpServletResponse response, String token) {
+		ResponseCookie accessCookie = createAccessTokenCookie(token);
+		response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+
+		// Legacy token cookie for backward compatibility with older clients
+		ResponseCookie legacyCookie = ResponseCookie.from("token", token)
+				.path("/")
+				.maxAge(Duration.ofMinutes(15))
+				.httpOnly(true)
+				.sameSite("Lax")
+				.secure(false)
+				.build();
+		response.addHeader(HttpHeaders.SET_COOKIE, legacyCookie.toString());
 	}
 
 	public Claims extractAllClaims(String token) {
@@ -138,12 +195,9 @@ public class AuthService {
 	}
 
 	public void processingLogout(Users user, HttpServletResponse response) {
-		Cookie cookie = new Cookie("token", null);
-		cookie.setHttpOnly(true);
-		cookie.setSecure(false);
-		cookie.setPath("/");
-		cookie.setMaxAge(0);
-		response.addCookie(cookie);
+		response.addHeader(HttpHeaders.SET_COOKIE, clearAccessTokenCookie().toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, clearRefreshTokenCookie().toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, clearLegacyTokenCookie().toString());
 
 		if (user != null && user.getUser_id() != 0) {
 			try {

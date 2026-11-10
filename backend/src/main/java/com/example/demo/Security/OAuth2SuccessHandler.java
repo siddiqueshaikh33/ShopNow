@@ -3,6 +3,7 @@ package com.example.demo.Security;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -13,6 +14,7 @@ import com.example.demo.Entity.Role;
 import com.example.demo.Entity.Users;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.Services.AuthService;
+import com.example.demo.Services.RefreshTokenService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,10 +25,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
-    public OAuth2SuccessHandler(UserRepository userRepository, AuthService authService) {
+    public OAuth2SuccessHandler(UserRepository userRepository, AuthService authService, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.authService = authService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Override
@@ -60,8 +64,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
 
         jwtToken = authService.validateCookie(user);
+        String rawRefreshToken = refreshTokenService.createRefreshToken(user);
 
         authService.addCookietoClient(response, jwtToken);
+        response.addHeader(HttpHeaders.SET_COOKIE, authService.createRefreshTokenCookie(rawRefreshToken).toString());
 
         response.sendRedirect("http://localhost:5173/dashboard");
     }
