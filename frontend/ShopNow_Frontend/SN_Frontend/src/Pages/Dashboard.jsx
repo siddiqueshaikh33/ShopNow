@@ -206,94 +206,77 @@ function Dashboard() {
 
       {/* Category Navigation Bar */}
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 pt-6 pb-2">
-        {loading && page === 0 ? (
-          <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm animate-pulse p-6">
-            <div className="h-6 w-48 bg-slate-200 mb-6 rounded"></div>
-            <div className="flex gap-4 sm:gap-6 overflow-x-auto justify-start sm:justify-center">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center gap-2 flex-shrink-0"
-                >
-                  <div className="h-16 w-16 sm:h-20 sm:w-20 bg-slate-200 rounded-full" />
-                  <div className="h-3 w-14 bg-slate-200 rounded" />
-                </div>
-              ))}
+        <div className="bg-white border border-slate-200/90 shadow-sm rounded-2xl p-5 sm:p-6 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Curated Collections
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                {categoryName
+                  ? `Showing ${categoryName} catalog`
+                  : "Select a department or browse all featured products"}
+              </p>
             </div>
+
+            {categoryName && (
+              <button
+                type="button"
+                onClick={() => handleCategoryClick("")}
+                className="self-start sm:self-auto text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
+              >
+                Clear Category Filter
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="bg-white border border-slate-200/90 shadow-sm rounded-2xl p-5 sm:p-6 mb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                  Curated Collections
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  {categoryName
-                    ? `Showing ${categoryName} catalog`
-                    : "Select a department or browse all featured products"}
-                </p>
-              </div>
 
-              {categoryName && (
+          <div className="flex gap-4 sm:gap-6 overflow-x-auto py-2 px-1 justify-start sm:justify-center">
+            {categories.map((cat) => {
+              const isActive = cat.isAll ? categoryName === "" : categoryName === cat.name;
+              return (
                 <button
+                  key={cat.name}
                   type="button"
-                  onClick={() => handleCategoryClick("")}
-                  className="self-start sm:self-auto text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
+                  className={`flex flex-col justify-center items-center flex-shrink-0 text-center transition-all duration-200 p-2.5 rounded-2xl cursor-pointer ${
+                    isActive
+                      ? "bg-[#ADEFD1]/35 ring-2 ring-slate-900 shadow-xs"
+                      : "hover:bg-slate-50"
+                  }`}
+                  onClick={() => handleCategoryClick(cat.isAll ? "" : cat.name)}
                 >
-                  Clear Category Filter
-                </button>
-              )}
-            </div>
-
-            <div className="flex gap-4 sm:gap-6 overflow-x-auto py-2 px-1 justify-start sm:justify-center">
-              {categories.map((cat) => {
-                const isActive = cat.isAll ? categoryName === "" : categoryName === cat.name;
-                return (
-                  <button
-                    key={cat.name}
-                    type="button"
-                    className={`flex flex-col justify-center items-center flex-shrink-0 text-center transition-all duration-200 p-2.5 rounded-2xl cursor-pointer ${
-                      isActive
-                        ? "bg-[#ADEFD1]/35 ring-2 ring-slate-900 shadow-xs"
-                        : "hover:bg-slate-50"
-                    }`}
-                    onClick={() => handleCategoryClick(cat.isAll ? "" : cat.name)}
-                  >
-                    {cat.isAll ? (
-                      <div
-                        className={`h-16 w-16 sm:h-20 sm:w-20 rounded-full flex items-center justify-center mb-2 transition-transform duration-200 p-0.5 border-2 ${
-                          isActive
-                            ? "border-slate-900 bg-slate-900 text-[#ADEFD1] scale-105"
-                            : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
-                        }`}
-                      >
-                        <LayoutGrid className="w-7 h-7 sm:w-8 sm:h-8" />
-                      </div>
-                    ) : (
-                      <img
-                        src={cat.img}
-                        alt={cat.name}
-                        className={`h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover mb-2 transition-transform duration-200 p-0.5 border-2 ${
-                          isActive
-                            ? "border-slate-900 scale-105"
-                            : "border-slate-200"
-                        }`}
-                      />
-                    )}
-                    <span
-                      className={`text-xs sm:text-sm font-semibold tracking-tight ${
-                        isActive ? "text-slate-950 font-bold" : "text-slate-700"
+                  {cat.isAll ? (
+                    <div
+                      className={`h-16 w-16 sm:h-20 sm:w-20 rounded-full flex items-center justify-center mb-2 transition-transform duration-200 p-0.5 border-2 ${
+                        isActive
+                          ? "border-slate-900 bg-slate-900 text-[#ADEFD1] scale-105"
+                          : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
                       }`}
                     >
-                      {cat.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                      <LayoutGrid className="w-7 h-7 sm:w-8 sm:h-8" />
+                    </div>
+                  ) : (
+                    <img
+                      src={cat.img}
+                      alt={cat.name}
+                      className={`h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover mb-2 transition-transform duration-200 p-0.5 border-2 ${
+                        isActive
+                          ? "border-slate-900 scale-105"
+                          : "border-slate-200"
+                      }`}
+                    />
+                  )}
+                  <span
+                    className={`text-xs sm:text-sm font-semibold tracking-tight ${
+                      isActive ? "text-slate-950 font-bold" : "text-slate-700"
+                    }`}
+                  >
+                    {cat.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Catalog Grid */}
