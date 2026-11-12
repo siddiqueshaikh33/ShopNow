@@ -147,6 +147,21 @@ Every decision entry must use this exact format:
 - Where in code: `CartItems.jsx`, `Cart.jsx`, `Dashboard.jsx`, `Card.jsx`, `CartService.java`, `CartController.java`.
 - Revisit when: Moving to a reserved-inventory timer pattern (e.g. concert ticketing with temporary 10-minute hold carts).
 
+### D-008: Server-Side Principal Binding to Eliminate Cart IDOR and Broken Access Control
+- Date: 2026-11-13
+- Status: Accepted
+- Problem: `/api/cart/add` and `/api/cart/count` previously accepted client-supplied `username` in request body and query parameters without verifying against the authenticated session token. This enabled Insecure Direct Object Reference (IDOR) attacks (CWE-639 / OWASP A01) where authenticated users could manipulate other users' carts or enumerate cart activity.
+- Options considered:
+  - Option A: Validate client-supplied username against the JWT username in the controller. Adds redundant parameter checks and still allows malicious payloads to trigger verification branches.
+  - Option B: Server-side principal extraction. Completely remove trust in client-supplied identifiers; extract `Authorized_User` strictly from `HttpServletRequest` (verified by `AuthFilter`), ignoring or deprecating client-supplied usernames.
+- Decision: Option B
+- Why chosen: Zero-trust architecture standard; eliminates attack surface for client tampering; reduces payload sizes; makes all cart endpoints consistent with `/getitems`, `/update`, and `/delete`.
+- Why the others were NOT chosen: Option A leaves redundant identity parameters in the API contract.
+- Risks / known downsides of the chosen option: API clients must be authenticated before calling `/cart/count` or `/cart/add`, which is already required by Spring Security.
+- How to verify it works: Unit and integration tests verifying `/cart/add` and `/cart/count` reject unauthenticated requests with HTTP 401; sending a different username in payload does not affect the target user; frontend correctly updates cart count without sending username.
+- Where in code: `CartController.java`, `CartService.java`, `Dashboard.jsx`, `CartControllerTest.java`.
+- Revisit when: Transitioning to anonymous guest cart sessions merged upon login.
+
 # Open items / backlog
 
 # Concepts learned
@@ -173,6 +188,7 @@ Every decision entry must use this exact format:
 - Spring Data `Slice<T>` vs `Page<T>`: `Slice<T>` queries `LIMIT size + 1` to determine `hasNext()` in a single SQL query, completely eliminating the table-scanning `SELECT COUNT(*)` query required by `Page<T>`, optimizing performance for infinite scroll feeds.
 - Infinite scroll circuit breaking: Unhandled API errors during infinite scroll cause runaway request loops if the observer sentinel remains in view; pausing the observer, setting an explicit error state, rolling back the page counter, and providing a manual retry button protects both the client and server.
 - E-commerce inventory ceiling vs. immediate reservation: Carting items enforces available inventory limits (ceiling) without deducting warehouse stock until payment creation, preventing cart-abandonment hoarding denial-of-service while protecting shoppers from overselling.
+- Server-Side Principal Binding vs. Client-Supplied Identifiers: Private user operations (such as adding items to cart or reading cart count) must strictly bind to the authenticated principal (`Authorized_User`) extracted from the verified session token, never trusting client-supplied `username` or `userId` in JSON request bodies or URL parameters, which eliminates Broken Access Control / IDOR (CWE-639) vulnerabilities.
 
 # Archive
 
