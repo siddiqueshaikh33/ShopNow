@@ -115,6 +115,22 @@ Every decision entry must use this exact format:
 - Where in code: `ProductRepository.java`, `ProductService.java`, `ProductController.java`, `PaginatedProductResponse.java`, `Dashboard.jsx`, `ProductServiceTest.java`, `ProductAndOrderIntegrationTest.java`.
 - Revisit when: The product catalog scales past 500,000 items and deep pagination latency degrades, requiring Keyset/cursor-based indexing or Elasticsearch/OpenSearch.
 
+### D-006: Externalized 12-Factor Configuration and HTTPS-Enforced Cookie Security
+- Date: 2026-11-12
+- Status: Implemented
+- Problem: Secrets, database credentials, and cookie security flags were previously hardcoded or tightly coupled to local profiles with inconsistent environment variable names (e.g. typos like `JWT_SECERT` and `RAZORPAY_SECERT`). Additionally, authentication cookies had hardcoded `secure(false)`, preventing HTTPS enforcement in production.
+- Options considered:
+  - Option A: Hardcode production configuration in a separate private repository branch. Rejected because branch drift creates deployment failures and leaks secrets into git history.
+  - Option B: Use external secret management services (e.g. AWS Secrets Manager, HashiCorp Vault). Adds substantial infrastructure overhead and external dependencies unnecessary for current deployment scale.
+  - Option C: 12-Factor externalized environment variable placeholders with local fallbacks and profile separation (`application.properties`, `application-prod.properties`, and `cookie.secure` injection). Backward-compatible with legacy typos while enforcing strict environment variable binding and `secure(true)` in production.
+- Decision: Option C
+- Why chosen: Zero overhead, 100% compliant with standard container and PaaS deployment environments (Docker, Render, Railway, Kubernetes), maintains local developer ergonomics without extra setup, and allows single-variable toggling of HTTPS cookie security (`COOKIE_SECURE=true`).
+- Why the others were NOT chosen: Option A risks secret leaks and version drift; Option B adds unnecessary infrastructure complexity.
+- Risks / known downsides of the chosen option: Deployments must supply required environment variables or the application will fail to connect. Documented fully in `.env.example`.
+- How to verify it works: All 63 automated tests pass with default fallbacks; running with `COOKIE_SECURE=true` generates `Secure` response cookies.
+- Where in code: `application.properties`, `application-prod.properties`, `AuthService.java`, `.env.example`.
+- Revisit when: The application transitions to a Kubernetes cluster requiring HashiCorp Vault or AWS KMS dynamic secret injection.
+
 # Open items / backlog
 
 # Concepts learned

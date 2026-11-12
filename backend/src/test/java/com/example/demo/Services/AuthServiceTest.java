@@ -220,4 +220,25 @@ class AuthServiceTest {
         assertTrue(cookie.isHttpOnly());
         assertEquals(java.time.Duration.ZERO, cookie.getMaxAge());
     }
+
+    @Test
+    @DisplayName("Should create cookies with secure=false by default in development")
+    void testCreateCookie_SecureFlagFalseByDefault() {
+        org.springframework.http.ResponseCookie accessCookie = authService.createAccessTokenCookie("sample-access-token");
+        org.springframework.http.ResponseCookie refreshCookie = authService.createRefreshTokenCookie("sample-refresh-token");
+
+        assertFalse(accessCookie.isSecure());
+        assertFalse(refreshCookie.isSecure());
+    }
+
+    @Test
+    @DisplayName("Should create cookies with secure=true when cookie.secure is enabled for HTTPS production")
+    void testCreateCookie_SecureFlagTrueWhenConfigured() {
+        AuthService prodAuthService = new AuthService(userRepository, jwtRepository, passwordEncoder, TEST_SECRET, true);
+        org.springframework.http.ResponseCookie accessCookie = prodAuthService.createAccessTokenCookie("sample-access-token");
+        org.springframework.http.ResponseCookie refreshCookie = prodAuthService.createRefreshTokenCookie("sample-refresh-token");
+
+        assertTrue(accessCookie.isSecure());
+        assertTrue(refreshCookie.isSecure());
+    }
 }

@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -36,19 +37,28 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final JwtRepository jwtRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final boolean cookieSecure;
 
+	@Autowired
 	public AuthService(UserRepository userRepository, JwtRepository jwtRepository,
-			PasswordEncoder passwordEncoder, @Value("${jwt.secret}") String jwtSecret) {
+			PasswordEncoder passwordEncoder, @Value("${jwt.secret}") String jwtSecret,
+			@Value("${cookie.secure:false}") boolean cookieSecure) {
 		super();
 		this.userRepository = userRepository;
 		this.jwtRepository = jwtRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.cookieSecure = cookieSecure;
 
 		if (jwtSecret.getBytes(StandardCharsets.UTF_8).length < 64) {
 			throw new IllegalArgumentException("jwt secret length is less then 64 please make it greater or equal to 64");
 		}
 
 		this.Secret_Key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public AuthService(UserRepository userRepository, JwtRepository jwtRepository,
+			PasswordEncoder passwordEncoder, String jwtSecret) {
+		this(userRepository, jwtRepository, passwordEncoder, jwtSecret, false);
 	}
 
 	public Users authenicate(String username, String password) {
@@ -103,7 +113,7 @@ public class AuthService {
 				.maxAge(Duration.ofMinutes(15))
 				.httpOnly(true)
 				.sameSite("Lax")
-				.secure(false)
+				.secure(this.cookieSecure)
 				.build();
 	}
 
@@ -113,7 +123,7 @@ public class AuthService {
 				.maxAge(Duration.ofDays(7))
 				.httpOnly(true)
 				.sameSite("Strict")
-				.secure(false)
+				.secure(this.cookieSecure)
 				.build();
 	}
 
@@ -123,7 +133,7 @@ public class AuthService {
 				.maxAge(0)
 				.httpOnly(true)
 				.sameSite("Lax")
-				.secure(false)
+				.secure(this.cookieSecure)
 				.build();
 	}
 
@@ -133,7 +143,7 @@ public class AuthService {
 				.maxAge(0)
 				.httpOnly(true)
 				.sameSite("Strict")
-				.secure(false)
+				.secure(this.cookieSecure)
 				.build();
 	}
 
@@ -143,7 +153,7 @@ public class AuthService {
 				.maxAge(0)
 				.httpOnly(true)
 				.sameSite("Lax")
-				.secure(false)
+				.secure(this.cookieSecure)
 				.build();
 	}
 
@@ -157,7 +167,7 @@ public class AuthService {
 				.maxAge(Duration.ofMinutes(15))
 				.httpOnly(true)
 				.sameSite("Lax")
-				.secure(false)
+				.secure(this.cookieSecure)
 				.build();
 		response.addHeader(HttpHeaders.SET_COOKIE, legacyCookie.toString());
 	}
