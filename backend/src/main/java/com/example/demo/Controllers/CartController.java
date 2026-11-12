@@ -44,12 +44,12 @@ public class CartController {
 	@PostMapping("/add")
 	public ResponseEntity<?> addCartItems(@RequestBody AddCartDto addCart) {
 		try {
-			LOGGER.error("running....");
-		int count = cartService.addOrUpdateCartItem(addCart);
-		 return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("count", count));
+			int count = cartService.addOrUpdateCartItem(addCart);
+			return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("count", count));
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
 		} catch (Exception e) {
-			LOGGER.error("errrorr.........");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Failed to add to cart"));
 		}
 	}
 	
@@ -78,10 +78,16 @@ public class CartController {
 	}
 	
 	@PutMapping("/update")
-	public ResponseEntity<Void> update(HttpServletRequest req, @RequestParam int productId, @RequestParam int quantity) {
-		Users user = (Users) req.getAttribute("Authorized_User");
-	   cartService.updateCartItem(user.getUser_id(), productId, quantity);
-	   return ResponseEntity.ok().build();
+	public ResponseEntity<?> update(HttpServletRequest req, @RequestParam int productId, @RequestParam int quantity) {
+		try {
+			Users user = (Users) req.getAttribute("Authorized_User");
+			cartService.updateCartItem(user.getUser_id(), productId, quantity);
+			return ResponseEntity.ok().build();
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Failed to update quantity"));
+		}
 	}
 	
 	@DeleteMapping("/delete")

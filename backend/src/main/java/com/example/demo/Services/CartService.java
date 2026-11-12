@@ -51,8 +51,15 @@ public class CartService {
 		
 		Optional<CartItems> cartItemOptional = cartItemRepository.findByUserIdAndProductId(user.getUser_id(), product.getProduct_id());
 
+		int currentQty = cartItemOptional.isPresent() ? cartItemOptional.get().getQuantity() : 0;
+		int requestedTotal = currentQty + addCartDto.getQuantity();
+
+		if (product.getStock() != null && requestedTotal > product.getStock()) {
+			throw new IllegalArgumentException("Cannot add more than available stock (" + product.getStock() + " available)");
+		}
+
 	    if(cartItemOptional.isPresent()) {
-	        cartItemOptional.get().setQuantity(cartItemOptional.get().getQuantity() + addCartDto.getQuantity());
+	        cartItemOptional.get().setQuantity(requestedTotal);
 	        cartItemRepository.save(cartItemOptional.get());
 	    } else {
 	        CartItems cartItem = new CartItems(user, product, addCartDto.getQuantity());
@@ -124,6 +131,9 @@ public class CartService {
 	        
 	        if(cartItemOptional.isPresent()) {
 	        	CartItems cartItem = cartItemOptional.get();
+				if (cartItem.getProduct().getStock() != null && quantity > cartItem.getProduct().getStock()) {
+					throw new IllegalArgumentException("Cannot exceed available stock (" + cartItem.getProduct().getStock() + " available)");
+				}
 	        	cartItem.setQuantity(quantity);
 	        	cartItemRepository.save(cartItem);
 	        }
