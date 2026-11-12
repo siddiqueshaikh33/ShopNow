@@ -111,86 +111,105 @@ function Login() {
     <div
       className="min-h-screen w-full flex flex-col lg:flex-row 
 items-center justify-center lg:justify-around 
-px-4 lg:px-20 py-6 sm:py-10 gap-8
+px-4 sm:px-8 lg:px-20 py-12 gap-8 sm:gap-12
 bg-gradient-to-r from-[#ADEFD1] via-[#7FD8BE] to-[#ADEFD1]
 bg-[length:400%_400%] animate-gradient"
     >
       {/* Left Side - Typed Text */}
-      <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[120px] sm:min-h-[200px] lg:min-h-[260px]">
+      <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[100px] sm:min-h-[180px] lg:min-h-[240px]">
         <span
           ref={el}
-          className="text-2xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
-          style={{ fontFamily: "Inter, sans-serif" }}
+          className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 whitespace-pre-line text-center lg:text-left leading-tight drop-shadow-xs"
         />
       </div>
 
-      {/* Right Side - Register Form */}
-      <div className="w-full sm:w-[380px] bg-white rounded-xl  shadow-xl p-2  lg:pt-4">
-        <h2 className="text-3xl font-bold text-center mb-4">Login</h2>
+      {/* Right Side - Login Card */}
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-10 relative z-10">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Welcome Back
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Sign in to access your cart and account
+          </p>
+        </div>
+
         <form
-          className="flex flex-col bg-white p-5 lg:p-5 pb-2 w-auto lg:w-92 relative gap-1"
+          className="flex flex-col gap-4"
           onSubmit={(e) => verifyUser(e)}
         >
-          <label
-            htmlFor="username"
-            className="absolute top-2 left-7 pr-1 pl-1 bg-white text-black font-semibold"
-          >
-            Username
-          </label>
-          <input
-            type="text"
-            placeholder="Enter the Username"
-            id="username"
-            className="border p-3 rounded-md mb-4"
-            onChange={(e) => setUsername(e.target.value)}
-          />
+          <div className="space-y-1.5">
+            <label
+              htmlFor="username"
+              className="block text-xs font-semibold text-slate-700"
+            >
+              Username
+            </label>
+            <input
+              type="text"
+              placeholder="Enter your username"
+              id="username"
+              value={Username}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition"
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-          <div className="flex flex-col gap-1 relative mb-2">
+          <div className="space-y-1.5">
             <label
               htmlFor="password"
-              className="text-black absolute top-[-0.80rem]
- left-2 pr-1 pl-1 bg-white font-semibold"
+              className="block text-xs font-semibold text-slate-700"
             >
               Password
             </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              placeholder="Enter the password"
-              className="border p-3 rounded-md pr-12"
-              required
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              type="button"
-              className="absolute right-4 top-4 text-lg text-blue-600 font-bold"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {" "}
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
-            </button>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Enter your password"
+                value={password}
+                className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition"
+                required
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition cursor-pointer p-1"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FaEye size={16} /> : <FaEyeSlash size={16} />}
+              </button>
+            </div>
           </div>
+
           {cooldown > 0 && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm text-center font-medium my-1">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-xl text-xs text-center font-medium">
               Too many attempts. Please try again in <span className="font-bold">{cooldown}s</span>.
             </div>
           )}
+
           <button
             type="submit"
             disabled={cooldown > 0}
-            className={`h-12 mt-1 rounded-xl font-semibold text-white text-xl transition-colors ${
+            className={`w-full h-12 mt-2 rounded-xl font-bold text-sm text-white transition-all duration-200 shadow-xs active:scale-[0.98] ${
               cooldown > 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-500 cursor-pointer"
+                ? "bg-slate-400 cursor-not-allowed"
+                : "bg-slate-900 hover:bg-[#062828] cursor-pointer"
             }`}
+            style={{
+              borderBottom: cooldown > 0 ? "none" : "2px solid #ADEFD1",
+            }}
           >
-            {cooldown > 0 ? `Wait (${cooldown}s)` : "Log In"}
+            {cooldown > 0 ? `Please Wait (${cooldown}s)` : "Sign In"}
           </button>
         </form>
-        <p className="text-center p-2 text-md ">
+
+        <p className="text-center text-xs text-slate-600 mt-6 pt-4 border-t border-slate-100">
           Don't have an account?{" "}
-          <Link to="/" className="text-blue-600 font-semibold hover:underline">
-            Register
+          <Link to="/" className="text-slate-900 font-bold hover:underline">
+            Register now
           </Link>
         </p>
       </div>

@@ -7,6 +7,7 @@ import axiosInstance from "../api/axiosInstance";
 import { SpinnerDotted } from "spinners-react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../Components/Footer";
+import BackNav from "../Components/BackNav";
 
 function Cart() {
   const { user } = useContext(UserContext);
@@ -66,6 +67,28 @@ function Cart() {
 
   const handlePayment = async () => {
     if (click) return; // extra safety guard
+
+    // Pre-checkout stock boundary verification
+    const exceedsStockItem = cartItems.find(
+      (item) => item.product_stock != null && item.quantity > item.product_stock
+    );
+    if (exceedsStockItem) {
+      toast.error(
+        `Quantity for "${exceedsStockItem.product_name}" exceeds available stock (${exceedsStockItem.product_stock} available). Please adjust your cart.`
+      );
+      return;
+    }
+
+    const outOfStockItem = cartItems.find(
+      (item) => item.product_stock != null && item.product_stock <= 0
+    );
+    if (outOfStockItem) {
+      toast.error(
+        `"${outOfStockItem.product_name}" is currently out of stock. Please remove it from your cart.`
+      );
+      return;
+    }
+
     setClick(true);
     await openRazorpay();
   };
@@ -125,12 +148,11 @@ function Cart() {
       setClick(false);
     } catch (error) {
       const errorMessage =
-        error.response?.data || "Failed to initiate payment";
-      toast.error(
-        typeof errorMessage === "string"
-          ? errorMessage
-          : "Failed to initiate payment"
-      );
+        error.response?.data?.message ||
+        (typeof error.response?.data === "string"
+          ? error.response.data
+          : "Failed to initiate payment");
+      toast.error(errorMessage);
       setClick(false);
     }
   };
@@ -162,21 +184,25 @@ function Cart() {
     }
   };
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <Navbar user={user ? user.username : "Guest"} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 sm:mb-7">Shopping Cart</h1>
+        <BackNav to="/dashboard" label="Back to Catalog" className="mb-4" />
+
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mb-6 sm:mb-8">
+          Shopping Cart
+        </h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex-1">
             {loading ? (
-              <div className="h-screen flex items-center justify-center">
+              <div className="h-64 flex items-center justify-center">
                 <SpinnerDotted
                   size={60}
                   thickness={100}
                   speed={50}
-                  color="rgb(95, 249, 89)"
+                  color="#ADEFD1"
                 />
               </div>
             ) : cartItems.length > 0 ? (
@@ -186,51 +212,68 @@ function Cart() {
                     key={item.product_id}
                     item={item}
                     updateCart={updateClickCart}
-                    deleteCart={deleteClickCart} // WORKS
+                    deleteCart={deleteClickCart}
                   />
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600 text-2xl sm:text-4xl flex font-semibold justify-center items-center h-57 text-center px-4">
-                Your cart is empty.
-              </p>
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-12 text-center max-w-md mx-auto my-12">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Your cart is empty</h3>
+                <p className="text-xs text-slate-500 mb-6">
+                  You haven't added any products to your cart yet.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/dashboard")}
+                  className="px-5 py-2.5 bg-slate-900 hover:bg-[#062828] text-white text-xs font-semibold rounded-xl transition shadow-xs cursor-pointer"
+                  style={{ borderBottom: "2px solid #ADEFD1" }}
+                >
+                  Browse Products
+                </button>
+              </div>
             )}
           </div>
 
           {/* RIGHT */}
           {!loading && cartItems.length > 0 && (
             <div className="w-full lg:w-1/3">
-              <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6 lg:sticky lg:top-24">
-                <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 lg:sticky lg:top-24">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-6">
+                  Order Summary
+                </h2>
 
-                <div className="space-y-4 text-gray-700">
+                <div className="space-y-4 text-sm text-slate-600">
                   <div className="flex justify-between">
                     <span>Total Items</span>
-                    <span className="font-medium">
+                    <span className="font-semibold text-slate-900">
                       {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>₹ {overAllTotal.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-900">₹ {overAllTotal.toFixed(2)}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>Delivery</span>
-                    <span className="text-green-600 font-medium">FREE</span>
+                    <span className="text-emerald-700 font-bold text-xs uppercase bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      FREE
+                    </span>
                   </div>
                 </div>
 
-                <div className="border-t my-5"></div>
+                <div className="border-t border-slate-100 my-5"></div>
 
-                <div className="flex justify-between font-bold text-lg">
+                <div className="flex justify-between font-extrabold text-slate-900 text-lg">
                   <span>Total Amount</span>
                   <span>₹ {overAllTotal.toFixed(2)}</span>
                 </div>
 
                 <button
-                  className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+                  type="button"
+                  className="w-full mt-6 bg-slate-900 hover:bg-[#062828] text-white py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  style={{ borderBottom: "2px solid #ADEFD1" }}
                   disabled={click}
                   onClick={handlePayment}
                 >

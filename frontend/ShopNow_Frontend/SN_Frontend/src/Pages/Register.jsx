@@ -6,7 +6,6 @@ import axiosInstance from "../api/axiosInstance";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import Logo from "../assets/logo.jpg";
 
 function Register() {
   const el = useRef(null);
@@ -31,7 +30,6 @@ function Register() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("CUSTOMER");
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
 
@@ -132,122 +130,144 @@ px-4 lg:px-20 py-6 sm:py-10 gap-8
 bg-gradient-to-r from-[#ADEFD1] via-[#7FD8BE] to-[#ADEFD1]
 bg-[length:400%_400%] animate-gradient"
     >
-      <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[150px] sm:min-h-[200px] lg:min-h-[260px] pt-2 lg:pt-0">
+      {/* Left Side - Typed Text */}
+      <div className="w-full lg:w-1/2 flex justify-center lg:justify-start min-h-[120px] sm:min-h-[180px] lg:min-h-[240px]">
         <span
           ref={el}
-          className="text-2xl sm:text-3xl lg:text-6xl font-bold text-black whitespace-pre-line text-center lg:text-left"
-          style={{ fontFamily: "Inter, sans-serif" }}
+          className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 whitespace-pre-line text-center lg:text-left leading-tight drop-shadow-xs"
         />
       </div>
 
-      <div className="w-full sm:w-[380px] bg-white rounded-xl shadow-xl p-2 lg:p-2 lg:pt-4 mb-10">
-        <h2 className="text-3xl font-bold text-center mb-4">Register</h2>
+      {/* Right Side - Register Card */}
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-10 relative z-10 mb-8 sm:mb-0">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Create an Account
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Sign up to start shopping on ShopNow
+          </p>
+        </div>
+
         <form
-          className="flex flex-col bg-white p-2 lg:p-5 pb-2 w-auto lg:w-92 relative"
-          onSubmit={(e) => {
-            registerUser(e);
-          }}
+          className="flex flex-col gap-4"
+          onSubmit={(e) => registerUser(e)}
         >
-          <label
-            htmlFor="username"
-            className="absolute top-[-0.40rem] left-5 lg:top-2 lg:left-7 pr-1 pl-1  bg-white text-black font-semibold"
-          >
-            Username
-          </label>
-          <input
-            type="text"
-            placeholder="Enter the Username"
-            id="username"
-            className="border p-3 rounded-md mb-4"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <label
-            htmlFor="email"
-            className="absolute top-15 left-5 lg:top-18 lg:left-7 pr-1 pl-1 bg-white text-black font-semibold"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            placeholder="Enter the Email"
-            id="email"
-            className="border p-3 rounded-md mb-4"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <div className="flex flex-col gap-1 relative mb-4">
+          <div className="space-y-1.5">
+            <label
+              htmlFor="username"
+              className="block text-xs font-semibold text-slate-700"
+            >
+              Username
+            </label>
+            <input
+              type="text"
+              placeholder="Choose a username"
+              id="username"
+              value={username}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition"
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="email"
+              className="block text-xs font-semibold text-slate-700"
+            >
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="name@example.com"
+              id="email"
+              value={email}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition"
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
             <label
               htmlFor="password"
-              className="text-black absolute top-[-0.80rem]
-          left-2 pr-1 pl-1 bg-white font-semibold"
+              className="block text-xs font-semibold text-slate-700"
             >
               Password
             </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              placeholder="Enter the password"
-              className="border p-3 rounded-md pr-12"
-              required
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              type="button"
-              className="absolute right-4 top-4 text-lg text-blue-600 font-bold"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {" "}
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
-            </button>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Minimum 8 characters"
+                value={password}
+                className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition"
+                required
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition cursor-pointer p-1"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FaEye size={16} /> : <FaEyeSlash size={16} />}
+              </button>
+            </div>
           </div>
-          <label
-            htmlFor="role"
-            className="absolute top-48 left-5 lg:top-51 lg:left-7 pr-1 pl-1 bg-white text-black font-semibold"
-          >
-            Role
-          </label>
-          <select
-            name="role"
-            placeholder="Select your role"
-            id="role"
-            className="border p-3 rounded-md mb-4"
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="CUSTOMER">Customer</option>
-          </select>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="role"
+              className="block text-xs font-semibold text-slate-700"
+            >
+              Account Type
+            </label>
+            <select
+              name="role"
+              id="role"
+              value={role}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition"
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="CUSTOMER">Customer</option>
+            </select>
+          </div>
+
           <button
             type="submit"
-            className="bg-blue-600  h-12 mt-1 rounded-xl font-semibold text-white text-xl hover:bg-blue-500"
+            className="w-full h-12 mt-2 rounded-xl font-bold text-sm text-white transition-all duration-200 shadow-xs active:scale-[0.98] bg-slate-900 hover:bg-[#062828] cursor-pointer"
+            style={{
+              borderBottom: "2px solid #ADEFD1",
+            }}
           >
-            Sign Up
+            Create Account
           </button>
-          <div className="flex items-center my-4 justify-center">
-            <p className="mx-2 font-semibold text-gray-500">OR</p>
+
+          <div className="flex items-center my-2 justify-center gap-3">
+            <div className="h-px bg-slate-200 flex-grow" />
+            <span className="text-xs font-semibold text-slate-400">OR</span>
+            <div className="h-px bg-slate-200 flex-grow" />
           </div>
+
           <button
             type="button"
             onClick={() =>
               (window.location.href =
                 "http://localhost:8080/oauth2/authorization/google")
             }
-            className="flex items-center justify-center gap-3 
-             bg-white text-gray-700 
-             h-12 px-6 rounded-xl 
-             border border-gray-300 
-             shadow-sm hover:shadow-md 
-             transition-all duration-200 
-             font-medium text-lg"
+            className="w-full h-11 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2.5 transition shadow-2xs cursor-pointer"
           >
-            <FcGoogle size={22} />
-            Continue with Google
+            <FcGoogle size={18} />
+            <span>Continue with Google</span>
           </button>
         </form>
-        <p className="text-center mt-1 p-2 text-md">
+
+        <p className="text-center text-xs text-slate-600 mt-6 pt-4 border-t border-slate-100">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 font-semibold hover:underline"
-          >
-            Login
+          <Link to="/login" className="text-slate-900 font-bold hover:underline">
+            Sign in
           </Link>
         </p>
       </div>

@@ -1,12 +1,11 @@
-import { useState } from "react";
-import { createContext } from "react";
+import { useState, createContext } from "react";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  console.log("UserProvider Rendered. User:", user);
   return (
     <UserContext.Provider value={{ user, setUser, loading, setLoading }}>
       {children}

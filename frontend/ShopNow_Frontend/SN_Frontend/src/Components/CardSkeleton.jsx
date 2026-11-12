@@ -1,16 +1,24 @@
 function CardSkeleton() {
   return (
-    <div className="w-[280px] sm:w-60 md:w-64 lg:w-72 max-w-full h-auto min-h-[380px] rounded-xl bg-white shadow-md overflow-hidden animate-pulse p-2">
-      {/* Image skeleton */}
-      <div className="h-50 bg-gray-200" />
+    <div className="w-full h-full flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden animate-pulse">
+      {/* Image Stage Skeleton */}
+      <div className="h-48 bg-slate-100 relative w-full" />
 
-      {/* Content skeleton */}
-      <div className="p-4 space-y-3">
-        <div className="h-4 w-3/4 bg-gray-200 rounded" />
-        <div className="h-3 w-full bg-gray-200 rounded" />
-        <div className="h-3 w-5/6 bg-gray-200 rounded" />
+      {/* Content Skeleton */}
+      <div className="p-4 space-y-3 flex-grow flex flex-col justify-between">
+        <div className="space-y-2">
+          <div className="h-4 w-3/4 bg-slate-200 rounded" />
+          <div className="h-3 w-full bg-slate-100 rounded" />
+          <div className="h-3 w-2/3 bg-slate-100 rounded" />
+        </div>
 
-        <div className="h-8 w-24 bg-gray-200 rounded mt-4 flex items-center justify-center" />
+        <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+          <div className="space-y-1">
+            <div className="h-2 w-8 bg-slate-100 rounded" />
+            <div className="h-5 w-14 bg-slate-200 rounded" />
+          </div>
+          <div className="h-8 w-24 bg-slate-200 rounded-xl" />
+        </div>
       </div>
     </div>
   );

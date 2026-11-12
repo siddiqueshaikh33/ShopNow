@@ -1,9 +1,19 @@
 @import "tailwindcss";
 
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  letter-spacing: -0.01em;
+}
+
 body {
   margin: 0;
   padding: 0;
   height: 100%;
+  font-family: inherit;
+  color: #0f172a;
+  background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Medium soft animated background */

@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import axiosInstance from "../api/axiosInstance";
 import Footer from "../Components/Footer";
 import logo from "../assets/logo.jpg";
+import BackNav from "../Components/BackNav";
 
 import {
   PieChart,
@@ -237,7 +238,10 @@ function AdminDashboard() {
         showProfile={true}
         dashboardPath="/admindashboard"
       />
-      <h1 className="font-bold text-2xl sm:text-3xl m-4 sm:m-6 sm:ml-10">Admin Dashboard</h1>
+      <div className="m-4 sm:m-6 sm:ml-10 mb-2 flex items-center justify-between flex-wrap gap-4">
+        <h1 className="font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight">Admin Dashboard</h1>
+        <BackNav to="/dashboard" label="Back to Storefront" />
+      </div>
       <div className="admin-dashboard-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 m-4 sm:m-6 lg:m-10 justify-center">
         {/* 1) Add Product */}
         <DashboardCard

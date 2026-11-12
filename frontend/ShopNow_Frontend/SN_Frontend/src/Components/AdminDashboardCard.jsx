@@ -1,19 +1,19 @@
 function AdminDashboardCard({ title, subtitle, buttonText, onClick }) {
   return (
-    <div className="w-full min-h-40 h-auto bg-blue-200 p-4 sm:p-5 rounded-lg flex flex-col justify-center items-center hover:border-blue-500 hover:border-2 transition-border ease-in-out text-center">
+    <div className="w-full min-h-44 h-auto bg-white border border-slate-200/90 shadow-sm p-6 rounded-2xl flex flex-col justify-between items-center text-center hover:shadow-md transition-all">
       <button
-        className="w-auto h-auto bg-blue-500 text-white px-4 py-2 rounded"
+        type="button"
+        className="px-5 py-2.5 bg-slate-900 hover:bg-[#062828] text-white font-bold text-xs rounded-xl transition shadow-xs cursor-pointer active:scale-[0.98]"
+        style={{ borderBottom: "2px solid #ADEFD1" }}
         onClick={onClick}
       >
         {buttonText}
       </button>
-      <p className="m-2 font-bold text-sm sm:text-base">{title}</p>
+      <p className="mt-3 font-bold text-slate-900 text-sm sm:text-base">{title}</p>
 
-      <div className="m-1 text-gray-600">
-        <h1 className="font-semibold text-xs sm:text-sm">{subtitle}</h1>
+      <div className="mt-1 text-slate-500">
+        <span className="font-medium text-xs sm:text-sm">{subtitle}</span>
       </div>
-
-      <div></div>
     </div>
   );
 }
