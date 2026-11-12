@@ -150,12 +150,12 @@ function Dashboard() {
     const fetchCartCount = async () => {
       try {
         const response = await axiosInstance.get("/cart/count", {
-          params: { username: user.username },
           withCredentials: true,
         });
         if (response.status === 200) setCount(response.data.count);
-      } catch (error) {
-        console.error("errorrrrrrrr:", error);
+      } catch {
+        // Silently catch or handle cart count retrieval error
+        setError(null);
       }
     };
     fetchCartCount();
@@ -171,7 +171,6 @@ function Dashboard() {
       return;
     }
     const data = {
-      username: user.username,
       product_id: product.product_id,
       quantity: 1,
     };
