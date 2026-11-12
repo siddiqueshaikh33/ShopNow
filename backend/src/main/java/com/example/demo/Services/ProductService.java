@@ -64,8 +64,4 @@ public class ProductService {
 		}
 		return productSlice.map(ProductResponseDto::fromEntity);
 	}
-
-	public String getProductImgByProductId(int productId) {
-		return productImgRepository.findImageUrlByProductId(productId);
-	}
 }

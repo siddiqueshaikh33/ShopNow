@@ -14,8 +14,6 @@ import com.example.demo.Entity.Products;
 @Repository
 public interface ProductRepository extends JpaRepository<Products, Integer> {
 
-	List<Products> findByCategories_CategoryId(int category_id);
-
 	@Query("SELECT DISTINCT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories")
 	List<Products> findAllWithPrimaryImage();
 
