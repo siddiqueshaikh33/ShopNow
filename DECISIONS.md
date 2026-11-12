@@ -131,6 +131,22 @@ Every decision entry must use this exact format:
 - Where in code: `application.properties`, `application-prod.properties`, `AuthService.java`, `.env.example`.
 - Revisit when: The application transitions to a Kubernetes cluster requiring HashiCorp Vault or AWS KMS dynamic secret injection.
 
+### D-007: Multi-Tier Stock Limit Boundary Enforcement and Ceiling Protection
+- Date: 2026-11-12
+- Status: Accepted
+- Problem: Shoppers could increment cart quantities beyond available product inventory, leading to checkout disappointment, overselling risks, or uninformative generic error messages.
+- Options considered:
+  - Option A: Frontend-only quantity clamp. Fails when malicious clients bypass the UI using direct API calls.
+  - Option B: Reserve stock immediately on cart addition. Causes cart-abandonment denial-of-service where abandoned carts lock inventory away from genuine buyers.
+  - Option C: Multi-tier stock ceiling enforcement: UI prevents carting > available stock (disables `+` button at ceiling, displays max stock badges, performs pre-checkout validation), while backend `CartService` and `CartController` enforce stock ceilings with descriptive HTTP 400 responses, and final deduction occurs atomically at payment checkout (`OrderTransactionService`).
+- Decision: Option C
+- Why chosen: Follows real-world e-commerce industry standards (Amazon, Shopify, Flipkart); provides zero-latency client-side feedback without locking inventory from other shoppers before checkout, while guaranteeing server-side integrity against API tampering.
+- Why the others were NOT chosen: Option A leaves backend APIs unprotected against forged requests; Option B causes inventory hoarding DOS.
+- Risks / known downsides of the chosen option: A competing buyer can purchase the last remaining item while another user has it in their cart, which is caught and gracefully handled by checkout validation.
+- How to verify it works: Frontend disables the `+` button when quantity reaches available stock and displays "Maximum stock reached"; attempting to increase triggers a warning toast; pre-checkout verifies all item quantities against stock; direct API calls attempting to exceed stock receive HTTP 400 with a clear error message; all backend unit and integration tests pass.
+- Where in code: `CartItems.jsx`, `Cart.jsx`, `Dashboard.jsx`, `Card.jsx`, `CartService.java`, `CartController.java`.
+- Revisit when: Moving to a reserved-inventory timer pattern (e.g. concert ticketing with temporary 10-minute hold carts).
+
 # Open items / backlog
 
 # Concepts learned
@@ -156,6 +172,7 @@ Every decision entry must use this exact format:
 - Preventing User Enumeration (CWE-204) in rate limiting: returning identical generic error responses (`"Too many requests. Please try again later."`) and status codes prevents attackers from probing whether an account exists or is currently locked out.
 - Spring Data `Slice<T>` vs `Page<T>`: `Slice<T>` queries `LIMIT size + 1` to determine `hasNext()` in a single SQL query, completely eliminating the table-scanning `SELECT COUNT(*)` query required by `Page<T>`, optimizing performance for infinite scroll feeds.
 - Infinite scroll circuit breaking: Unhandled API errors during infinite scroll cause runaway request loops if the observer sentinel remains in view; pausing the observer, setting an explicit error state, rolling back the page counter, and providing a manual retry button protects both the client and server.
+- E-commerce inventory ceiling vs. immediate reservation: Carting items enforces available inventory limits (ceiling) without deducting warehouse stock until payment creation, preventing cart-abandonment hoarding denial-of-service while protecting shoppers from overselling.
 
 # Archive
 
