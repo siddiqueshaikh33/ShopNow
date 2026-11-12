@@ -1,6 +1,7 @@
 package com.example.demo.Controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -18,6 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -75,6 +80,31 @@ class ProductAndOrderIntegrationTest {
                 .andExpect(jsonPath("$.product[0].product_id").value(101))
                 .andExpect(jsonPath("$.product[0].name").value("Running Shoes"))
                 .andExpect(jsonPath("$.product[0].price").value(79.99));
+    }
+
+    @Test
+    @DisplayName("GET /api/products?page=0&size=12 with valid token should return 200 OK and paginated slice")
+    void testGetProducts_Paginated_Success() throws Exception {
+        ProductResponseDto dto = new ProductResponseDto(
+                101, "Running Shoes", "High performance shoes", new BigDecimal("79.99"), 25, "https://example.com/shoes.jpg"
+        );
+        Pageable expectedPageable = PageRequest.of(0, 12);
+        Slice<ProductResponseDto> mockSlice = new SliceImpl<>(List.of(dto), expectedPageable, true);
+
+        when(productService.getProductDtosByCategoryId(eq(null), any(Pageable.class))).thenReturn(mockSlice);
+
+        mockMvc.perform(get("/api/products")
+                .param("page", "0")
+                .param("size", "12")
+                .cookie(new Cookie("token", validToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentPage").value(0))
+                .andExpect(jsonPath("$.pageSize").value(12))
+                .andExpect(jsonPath("$.hasMore").value(true))
+                .andExpect(jsonPath("$.products[0].product_id").value(101))
+                .andExpect(jsonPath("$.products[0].name").value("Running Shoes"))
+                .andExpect(jsonPath("$.products[0].price").value(79.99))
+                .andExpect(jsonPath("$.user.username").value("integrationUser"));
     }
 
     @Test

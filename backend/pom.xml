@@ -83,6 +83,20 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- ================= RATE LIMITING ================= -->
+
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.10.1</version>
+        </dependency>
+
+        <!-- Caffeine In-Memory Cache (Auto-Eviction to Prevent Memory Leaks) -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- ================= PAYMENTS ================= -->
 
         <!-- Razorpay -->

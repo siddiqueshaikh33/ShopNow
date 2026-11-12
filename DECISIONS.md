@@ -67,6 +67,54 @@ Every decision entry must use this exact format:
 - Where in code: `AuthService.java`, `AuthFilter.java`, `AuthServiceTest.java`.
 - Revisit when: Strict immediate server-side revocation across devices is required prior to token expiration (requiring a distributed Redis blocklist or short-lived tokens with refresh token rotation).
 
+### D-003: Scoped Refresh Token Cookie Path for Rotation and Logout Revocation
+- Date: 2026-11-10
+- Status: Implemented
+- Problem: Scoping the refresh token cookie strictly to `Path=/api/auth/refresh` prevented the browser from attaching the cookie when calling `POST /api/auth/logout`. As a result, `rawRefreshToken` was always null on logout, making server-side token revocation dead code and leaving active tokens unrevoked in the database.
+- Options considered:
+  - Option A: Frontend explicitly sends the refresh token in the logout request body/header. Rejected because refresh tokens are stored in `HttpOnly` cookies to protect against XSS token theft; frontend JavaScript cannot and should not access them.
+  - Option B: Broaden cookie path to root (`Path=/`). Exposes the refresh token on every single HTTP request across the entire application (`/api/products`, `/api/orders`, `/cart`), increasing request header overhead and attack surface.
+  - Option C: Scope refresh token cookie to `Path=/api/auth`. Matches both `/api/auth/refresh` (for silent token rotation) and `/api/auth/logout` (for database revocation and cookie clearing), while completely isolating the refresh token from non-auth endpoints.
+- Decision: Option C
+- Why chosen: Adheres to Cookie RFC 6265 prefix path matching; allows the browser to automatically include the refresh token on both token rotation and logout without frontend JavaScript exposure, while shielding all product/cart/order APIs.
+- Why the others were NOT chosen: Option A defeats the `HttpOnly` security boundary; Option B exposes the sensitive refresh token to unnecessary endpoints.
+- Risks / known downsides of the chosen option: Endpoints added directly under `/api/auth/*` in the future will receive the refresh token cookie.
+- How to verify it works: Unit tests verifying `createRefreshTokenCookie` and `clearRefreshTokenCookie` set `path=/api/auth`, and integration tests verifying `POST /api/auth/logout` receives and revokes the refresh token.
+- Where in code: `AuthService.java`, `AuthController.java`, `AuthServiceTest.java`.
+- Revisit when: Authentication endpoints are relocated to a different URI prefix or dedicated auth domain.
+
+### D-004: Tiered Dual-Key Rate Limiting with In-Memory Caffeine Cache
+- Date: 2026-11-10
+- Status: Implemented
+- Problem: Critical authentication and payment endpoints were vulnerable to brute-force credential stuffing and denial-of-service (DoS) attacks. Furthermore, botnets utilizing rotating proxy IP addresses could bypass standard IP-only rate limiting to crack passwords for specific user accounts. Unbounded in-memory rate-limit trackers also risk heap exhaustion and OutOfMemoryError (OOM) over time.
+- Options considered:
+  - Option A: Redis-backed distributed rate limiter (e.g., Bucket4j Redis extension). Provides cluster-wide synchronization across horizontal backend replicas, but introduces an external stateful infrastructure dependency, network round-trips for every HTTP request, and increased operational maintenance for this single-instance local deployment.
+  - Option B: Single global IP-based rate limiter in memory (e.g. Guava RateLimiter). Uniform rate limits either throttle legitimate shoppers browsing catalog pages or are too loose to stop targeted password brute-forcing on `/api/auth/login`; also completely fails against distributed rotating-IP attacks.
+  - Option C: Tiered Dual-Key in-memory rate limiting with Bucket4j and Caffeine Cache. Enforces strict IP limits (5 req/min) on auth/payment/user endpoints and general limits (100 req/min) on browsing, combined with a secondary username-keyed bucket (5 failed attempts/15 min) to thwart rotating IP attacks. Capped Caffeine caches with `expireAfterAccess` automatically evict idle entries to guarantee bounded memory usage.
+- Decision: Option C
+- Why chosen: Tailored protection that does not impact normal shopping browsing; stops both simple IP-based flooding and sophisticated distributed rotating-IP credential stuffing; operates in CPU RAM with sub-millisecond overhead; and bounds heap memory using automatic LRU/time-based eviction without external infrastructure dependencies.
+- Why the others were NOT chosen: Option A adds unnecessary infrastructure complexity and operational overhead for single-instance scale; Option B cannot protect catalog browsing while mitigating brute-force attacks and cannot detect distributed rotating-IP botnets.
+- Risks / known downsides of the chosen option: In-memory state is local to each JVM process; if the application scales to multiple instances behind a load balancer in the future without sticky sessions, rate limits will be per-instance rather than global.
+- How to verify it works: Unit tests for `RateLimitingService` and `RateLimitingFilter`, and MockMvc integration tests verifying strict IP throttling (HTTP 429), general IP pass-through, and rotating-IP username lockout after 5 failed attempts with `Retry-After` headers and generic error JSON.
+- Where in code: `RateLimitingService.java`, `RateLimitingFilter.java`, `AuthController.java`, `SecurityConfig.java`, `RateLimitingServiceTest.java`, `RateLimitingFilterTest.java`, `RateLimitingIntegrationTest.java`.
+- Revisit when: The backend is scaled horizontally across multiple server instances behind a load balancer without sticky sessions, requiring centralized Redis/Valkey rate limiting.
+
+### D-005: Sliced Infinite Pagination via Spring Data Slice and IntersectionObserver
+- Date: 2026-11-12
+- Status: Implemented
+- Problem: The product catalog endpoint previously loaded all products in a single unbounded database query (`findAllWithPrimaryImage()`). Under realistic catalog sizes (thousands of products), this causes massive database memory spikes, heavy network payload serialization, and mobile browser jank. Using standard `Page<T>` pagination adds a redundant, table-scanning `SELECT COUNT(*)` query on every scroll step.
+- Options considered:
+  - Option A: Standard offset pagination with Spring Data `Page<T>`. Runs two SQL queries per request: one for the rows (`LIMIT`) and one for the total count (`SELECT COUNT(*)`). Scanning millions of rows for total count on every scroll event degrades throughput for infinite feeds.
+  - Option B: Keyset (cursor-based) pagination (`WHERE id > :lastId LIMIT :size`). Highly efficient for strictly sequential reads, but complicated to maintain when adding multi-field sorting (e.g. price ascending/descending) and category filters.
+  - Option C: Sliced pagination with Spring Data `Slice<T>` (`LIMIT size + 1`) coupled with client-side browser `IntersectionObserver`. Executes only one query per request with zero `COUNT(*)` overhead, pre-fetches products 200px before the viewport, and incorporates an explicit error circuit breaker with retry to prevent runaway request loops.
+- Decision: Option C
+- Why chosen: Tailored specifically for infinite scroll UI feeds; provides optimal database efficiency by querying `size + 1` rows to calculate `hasNext()` in a single query; avoids main-thread scroll jank via native `IntersectionObserver`; and prevents network spam loops on error through dedicated error state tracking and page rollback.
+- Why the others were NOT chosen: Option A wastes significant database CPU scanning counts that infinite feeds never display; Option B adds unnecessary schema and query complexity for our catalog scale.
+- Risks / known downsides of the chosen option: Deep scrolling (e.g., page 500) with SQL `OFFSET` can experience slower query performance on massive datasets; mitigated by catalog category partitioning and practical user browsing depths.
+- How to verify it works: Unit tests in `ProductServiceTest` verifying `hasNext=true` on page 0 and `hasNext=false` on the final page; integration test in `ProductAndOrderIntegrationTest` verifying `GET /api/products?page=0&size=12` returns HTTP 200 and paginated slice schema.
+- Where in code: `ProductRepository.java`, `ProductService.java`, `ProductController.java`, `PaginatedProductResponse.java`, `Dashboard.jsx`, `ProductServiceTest.java`, `ProductAndOrderIntegrationTest.java`.
+- Revisit when: The product catalog scales past 500,000 items and deep pagination latency degrades, requiring Keyset/cursor-based indexing or Elasticsearch/OpenSearch.
+
 # Open items / backlog
 
 # Concepts learned
@@ -81,6 +129,17 @@ Every decision entry must use this exact format:
 - Client-side route protection requires both authentication (logged-in session check) and role-based authorization (e.g. `requiredRole === "ADMIN"`) to prevent unauthorized customer navigation to sensitive administrative UIs.
 - Frontend JSON request payload keys must strictly match backend DTO field names (e.g. `imgUrl` vs `imageUrl`); unmatched keys are silently dropped by Jackson deserialization unless configured with strict unknown property failure.
 - Centralizing API calls into a single configured `axiosInstance` reading `VITE_API_BASE_URL` with global `withCredentials: true` eliminates hardcoded hosts/ports, guarantees environment independence, and enforces architectural boundaries.
+- Centralized exception handling via `@RestControllerAdvice` transforms Java exceptions into RFC-7807 compliant JSON error structures (`timestamp`, `status`, `error`, `message`, `path`), preventing internal stack trace leaks to API clients.
+- End-to-end integration tests combining `@SpringBootTest` and `@AutoConfigureMockMvc` test complete HTTP filter pipelines (including `AuthFilter` JWT decoding and security context) against controller endpoints with mocked downstream services.
+- Containerizing full-stack web applications with multi-stage Docker builds decouples build-time SDKs (Maven/Node) from minimal production runtimes (Alpine JRE/Nginx), and Docker Compose healthchecks ensure MySQL is fully initialized before the Spring Boot container starts.
+- Refresh Token Rotation with SHA-256 database hashing and scoped path cookies (`Path=/api/auth`, `SameSite=Strict`, `HttpOnly`) limits access token blast radius to 15 minutes while detecting replay attacks and revoking compromised token families on reuse.
+- Cookie RFC 6265 Path matching: Browsers attach cookies only if the request path starts with the cookie's `Path`. Scoping a cookie to `/api/auth/refresh` prevents `/api/auth/logout` from receiving it; scoping to `/api/auth` delivers the cookie to both `/refresh` and `/logout` while safely hiding it from `/products`, `/cart`, and `/orders`.
+- Token Bucket algorithm (Bucket4j) allows smooth bursts up to bucket capacity while continuously refilling tokens at a fixed rate, avoiding artificial request spikes at fixed time boundaries.
+- Dual-Key rate limiting (IP + Username) mitigates distributed credential stuffing: tracking failed login attempts per username across rotating IP addresses prevents attackers from bypassing IP throttling.
+- Caffeine in-memory cache eviction (`expireAfterAccess` + `maximumSize`) bounds heap usage and prevents memory leaks from one-off attacker IPs by automatically evicting idle tracking buckets.
+- Preventing User Enumeration (CWE-204) in rate limiting: returning identical generic error responses (`"Too many requests. Please try again later."`) and status codes prevents attackers from probing whether an account exists or is currently locked out.
+- Spring Data `Slice<T>` vs `Page<T>`: `Slice<T>` queries `LIMIT size + 1` to determine `hasNext()` in a single SQL query, completely eliminating the table-scanning `SELECT COUNT(*)` query required by `Page<T>`, optimizing performance for infinite scroll feeds.
+- Infinite scroll circuit breaking: Unhandled API errors during infinite scroll cause runaway request loops if the observer sentinel remains in view; pausing the observer, setting an explicit error state, rolling back the page counter, and providing a manual retry button protects both the client and server.
 
 # Archive
 

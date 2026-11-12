@@ -1,6 +1,7 @@
 package com.example.demo.Services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,11 +11,16 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 import com.example.demo.Dto.ProductResponseDto;
 import com.example.demo.Entity.Categories;
@@ -97,5 +103,63 @@ class ProductServiceTest {
 
 		verify(productRepository).findByCategories_CategoryIdWithPrimaryImage(10);
 		verify(productImgRepository, never()).findImageUrlByProductId(1);
+	}
+
+	@Test
+	@DisplayName("Pagination: page 0 returns slice with hasNext=true when more items exist")
+	void getProductDtosByCategoryId_paginationPage0_hasNextTrue() {
+		Pageable pageable = PageRequest.of(0, 1);
+		Slice<Products> repositorySlice = new SliceImpl<>(List.of(productWithImage), pageable, true);
+		when(productRepository.findAllWithPrimaryImage(pageable)).thenReturn(repositorySlice);
+
+		Slice<ProductResponseDto> result = productService.getProductDtosByCategoryId(null, pageable);
+
+		assertThat(result.getContent()).hasSize(1);
+		assertThat(result.getNumber()).isEqualTo(0);
+		assertThat(result.getSize()).isEqualTo(1);
+		assertThat(result.hasNext()).isTrue();
+		assertThat(result.getContent().get(0).product_id()).isEqualTo(1);
+		assertThat(result.getContent().get(0).name()).isEqualTo("Wireless Mouse");
+
+		verify(productRepository).findAllWithPrimaryImage(pageable);
+		verify(productImgRepository, never()).findImageUrlByProductId(any(Integer.class));
+	}
+
+	@Test
+	@DisplayName("Pagination: last page returns slice with hasNext=false")
+	void getProductDtosByCategoryId_paginationLastPage_hasNextFalse() {
+		Pageable pageable = PageRequest.of(1, 1);
+		Slice<Products> repositorySlice = new SliceImpl<>(List.of(productWithoutImage), pageable, false);
+		when(productRepository.findAllWithPrimaryImage(pageable)).thenReturn(repositorySlice);
+
+		Slice<ProductResponseDto> result = productService.getProductDtosByCategoryId(null, pageable);
+
+		assertThat(result.getContent()).hasSize(1);
+		assertThat(result.getNumber()).isEqualTo(1);
+		assertThat(result.hasNext()).isFalse();
+		assertThat(result.getContent().get(0).product_id()).isEqualTo(2);
+		assertThat(result.getContent().get(0).name()).isEqualTo("USB Cable");
+
+		verify(productRepository).findAllWithPrimaryImage(pageable);
+	}
+
+	@Test
+	@DisplayName("Pagination: category filter returns sliced results for that category")
+	void getProductDtosByCategoryId_paginationWithCategory() {
+		Pageable pageable = PageRequest.of(0, 10);
+		Categories electronics = new Categories("Electronics");
+		electronics.setCategoryId(10);
+		when(categoriesRepository.findByCategoryName("Electronics")).thenReturn(Optional.of(electronics));
+
+		Slice<Products> repositorySlice = new SliceImpl<>(List.of(productWithImage), pageable, false);
+		when(productRepository.findByCategories_CategoryIdWithPrimaryImage(10, pageable)).thenReturn(repositorySlice);
+
+		Slice<ProductResponseDto> result = productService.getProductDtosByCategoryId("Electronics", pageable);
+
+		assertThat(result.getContent()).hasSize(1);
+		assertThat(result.hasNext()).isFalse();
+		assertThat(result.getContent().get(0).name()).isEqualTo("Wireless Mouse");
+
+		verify(productRepository).findByCategories_CategoryIdWithPrimaryImage(10, pageable);
 	}
 }

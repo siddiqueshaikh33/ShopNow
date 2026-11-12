@@ -14,6 +14,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.example.demo.Filter.AuthFilter;
+import com.example.demo.Filter.RateLimitingFilter;
+import com.example.demo.Security.OAuth2SuccessHandler;
+
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,10 +27,12 @@ public class SecurityConfig {
 
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final AuthFilter AuthFilter;
+    private final RateLimitingFilter rateLimitingFilter;
 
-    public SecurityConfig(OAuth2SuccessHandler oAuth2SuccessHandler, AuthFilter AuthFilter) {
+    public SecurityConfig(OAuth2SuccessHandler oAuth2SuccessHandler, AuthFilter AuthFilter, RateLimitingFilter rateLimitingFilter) {
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
         this.AuthFilter = AuthFilter;
+        this.rateLimitingFilter = rateLimitingFilter;
     }
 
     @Bean
@@ -35,6 +41,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of("Retry-After", "X-Rate-Limit-Remaining"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -72,6 +79,7 @@ public class SecurityConfig {
         http.httpBasic(basic -> basic.disable());
         http.oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler));
         http.addFilterBefore(AuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(rateLimitingFilter, AuthFilter.class);
         return http.build();
     }
 }

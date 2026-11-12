@@ -3,6 +3,8 @@ package com.example.demo.Services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Dto.ProductResponseDto;
@@ -50,6 +52,17 @@ public class ProductService {
 		return products.stream()
 				.map(ProductResponseDto::fromEntity)
 				.toList();
+	}
+
+	public Slice<ProductResponseDto> getProductDtosByCategoryId(String categoryName, Pageable pageable) {
+		Slice<Products> productSlice;
+		if (categoryName != null && !categoryName.trim().isEmpty()) {
+			Categories categoryObject = getCategoryByCategoryName(categoryName);
+			productSlice = productRepository.findByCategories_CategoryIdWithPrimaryImage(categoryObject.getCategoryId(), pageable);
+		} else {
+			productSlice = productRepository.findAllWithPrimaryImage(pageable);
+		}
+		return productSlice.map(ProductResponseDto::fromEntity);
 	}
 
 	public String getProductImgByProductId(int productId) {
