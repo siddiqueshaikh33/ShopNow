@@ -25,11 +25,16 @@ function Dashboard() {
   const [categoryName, setCategoryName] = useState("");
   const [count, setCount] = useState(0);
   const sentinelRef = useRef(null);
+  const isFetchingRef = useRef(false);
 
   // Fetch products whenever page or categoryName changes
   useEffect(() => {
     let isMounted = true;
     const fetchProducts = async () => {
+      // Prevent duplicate in-flight requests
+      if (isFetchingRef.current) return;
+      isFetchingRef.current = true;
+
       if (page === 0) {
         setLoading(true);
         setError(null);
@@ -50,7 +55,14 @@ function Dashboard() {
 
         if (isMounted && response.status === 200) {
           const newProducts = response.data.products || response.data.product || [];
-          setProducts((prev) => (page === 0 ? newProducts : [...prev, ...newProducts]));
+          setProducts((prev) => {
+            if (page === 0) return newProducts;
+            const existingIds = new Set(prev.map((item) => item.product_id));
+            const uniqueIncoming = newProducts.filter(
+              (item) => !existingIds.has(item.product_id)
+            );
+            return [...prev, ...uniqueIncoming];
+          });
           setHasMore(response.data.hasMore ?? false);
           setError(null);
         }
@@ -69,6 +81,7 @@ function Dashboard() {
           }
         }
       } finally {
+        isFetchingRef.current = false;
         if (isMounted) {
           setLoading(false);
           setLoadingMore(false);
@@ -90,7 +103,13 @@ function Dashboard() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && !error) {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !isFetchingRef.current &&
+          !loadingMore &&
+          !error
+        ) {
           setPage((prevPage) => prevPage + 1);
         }
       },
@@ -114,6 +133,7 @@ function Dashboard() {
   }, [loading, loadingMore, hasMore, error]);
 
   const handleCategoryClick = (catName) => {
+    isFetchingRef.current = false;
     if (categoryName === catName) {
       setCategoryName("");
     } else {
@@ -291,7 +311,9 @@ function Dashboard() {
         </div>
 
         {/* Invisible Sentinel for Infinite Scroll IntersectionObserver */}
-        <div ref={sentinelRef} className="h-4 w-full" />
+        {!loading && products.length > 0 && hasMore && (
+          <div ref={sentinelRef} className="h-4 w-full" />
+        )}
 
         {/* Loading More Spinner */}
         {loadingMore && (
