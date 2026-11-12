@@ -26,25 +26,26 @@ import jakarta.servlet.http.HttpServletRequest;
 
 
 @RestController
-@CrossOrigin(originPatterns = "http://localhost:5173" , allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/cart")
 public class CartController {
 	
-	 private static final Logger LOGGER = LoggerFactory.getLogger(CartController.class);
-	private CartService cartService;
+	private static final Logger LOGGER = LoggerFactory.getLogger(CartController.class);
+	private final CartService cartService;
 
-	
 	public CartController(CartService cartService) {
-		super();
 		this.cartService = cartService;
-	
 	}
 
-	
 	@PostMapping("/add")
-	public ResponseEntity<?> addCartItems(@RequestBody AddCartDto addCart) {
+	public ResponseEntity<?> addCartItems(HttpServletRequest req, @RequestBody AddCartDto addCart) {
 		try {
-			int count = cartService.addOrUpdateCartItem(addCart);
+			Users user = (Users) req.getAttribute("Authorized_User");
+			if (user == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
+			}
+
+			int count = cartService.addOrUpdateCartItem(user.getUser_id(), addCart.getProduct_id(), addCart.getQuantity());
 			return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("count", count));
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
@@ -52,25 +53,28 @@ public class CartController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Failed to add to cart"));
 		}
 	}
-	
-	
+
 	@GetMapping("/count")
-	public ResponseEntity<?> getCartCount(@RequestParam String username) {
+	public ResponseEntity<?> getCartCount(HttpServletRequest req) {
 		try {
-			LOGGER.error("error ohhh ji error");
-	    int count = cartService.getTotalCartQuantity(username);
-	    return ResponseEntity.status(HttpStatus.OK).body(Map.of("count", count));
+			Users user = (Users) req.getAttribute("Authorized_User");
+			if (user == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
+			}
+
+			int count = cartService.countCartItem(user.getUser_id());
+			return ResponseEntity.ok(Map.of("count", count));
 		} catch (Exception e) {
-			LOGGER.error("dhabba error");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "ERROR COUNTING ERROR"));
+			LOGGER.error("Failed to retrieve cart count: {}", e.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Failed to retrieve cart count"));
 		}
 	}
     
 	@GetMapping("/getitems")
-	public ResponseEntity<Map<String, Object>> fetch(HttpServletRequest req) {
+	public ResponseEntity<?> fetch(HttpServletRequest req) {
 		Users user = (Users) req.getAttribute("Authorized_User");
-		if(user == null) {
-			return ResponseEntity.badRequest().body(Map.of("error", "UnAuthorize User"));
+		if (user == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
 		}
 		
 		Map<String, Object> allCartItems = cartService.fetchAllCartItemsByUserName(user.getUsername());
@@ -81,6 +85,10 @@ public class CartController {
 	public ResponseEntity<?> update(HttpServletRequest req, @RequestParam int productId, @RequestParam int quantity) {
 		try {
 			Users user = (Users) req.getAttribute("Authorized_User");
+			if (user == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
+			}
+
 			cartService.updateCartItem(user.getUser_id(), productId, quantity);
 			return ResponseEntity.ok().build();
 		} catch (IllegalArgumentException e) {
@@ -91,11 +99,15 @@ public class CartController {
 	}
 	
 	@DeleteMapping("/delete")
-	public ResponseEntity<Void> deleteCartItem(HttpServletRequest request, @RequestParam int productId) {
+	public ResponseEntity<?> deleteCartItem(HttpServletRequest request, @RequestParam int productId) {
 		try {
-		Users user = (Users) request.getAttribute("Authorized_User");
-		cartService.deleteCart(user.getUser_id(), productId);
-		return ResponseEntity.ok().build();
+			Users user = (Users) request.getAttribute("Authorized_User");
+			if (user == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized User"));
+			}
+
+			cartService.deleteCart(user.getUser_id(), productId);
+			return ResponseEntity.ok().build();
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().build();
 		}

@@ -1,18 +1,12 @@
 package com.example.demo.Services;
 
-
-
 import java.math.BigDecimal;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import java.util.stream.Collectors;
-
-import javax.management.RuntimeErrorException;
 
 import org.springframework.stereotype.Service;
 
@@ -25,55 +19,56 @@ import com.example.demo.Repository.ProductImgRepository;
 import com.example.demo.Repository.ProductRepository;
 import com.example.demo.Repository.UserRepository;
 
-
-
 @Service
 public class CartService {
     
-	private UserRepository userRepository;
-	private ProductRepository productRepository;
-	private CartItemRepository cartItemRepository;
-	private ProductImgRepository productImgRepository;
+	private final UserRepository userRepository;
+	private final ProductRepository productRepository;
+	private final CartItemRepository cartItemRepository;
+	private final ProductImgRepository productImgRepository;
 
 	public CartService(UserRepository userRepository, CartItemRepository cartItemRepository, ProductRepository productRepository, ProductImgRepository productImgRepository) {
-		super();
 		this.userRepository = userRepository;
 		this.cartItemRepository = cartItemRepository;
 		this.productRepository = productRepository;
 		this.productImgRepository = productImgRepository;
 	}
 	
-	
-	public int addOrUpdateCartItem(AddCartDto addCartDto) {
-		Users user = userRepository.findByUsername(addCartDto.getUsername()).orElseThrow(() ->  new RuntimeException("Invalid User"));
-		
-		Products product = productRepository.findById(addCartDto.getProduct_id()).orElseThrow(() -> new RuntimeException("Invalid Product"));
-		
-		Optional<CartItems> cartItemOptional = cartItemRepository.findByUserIdAndProductId(user.getUser_id(), product.getProduct_id());
+	public int addOrUpdateCartItem(int userId, int productId, int quantity) {
+		Users user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("Invalid User"));
+
+		Products product = productRepository.findById(productId)
+				.orElseThrow(() -> new RuntimeException("Invalid Product"));
+
+		Optional<CartItems> cartItemOptional = cartItemRepository.findByUserIdAndProductId(userId, productId);
 
 		int currentQty = cartItemOptional.isPresent() ? cartItemOptional.get().getQuantity() : 0;
-		int requestedTotal = currentQty + addCartDto.getQuantity();
+		int requestedTotal = currentQty + quantity;
 
 		if (product.getStock() != null && requestedTotal > product.getStock()) {
 			throw new IllegalArgumentException("Cannot add more than available stock (" + product.getStock() + " available)");
 		}
 
-	    if(cartItemOptional.isPresent()) {
-	        cartItemOptional.get().setQuantity(requestedTotal);
-	        cartItemRepository.save(cartItemOptional.get());
-	    } else {
-	        CartItems cartItem = new CartItems(user, product, addCartDto.getQuantity());
-	        cartItemRepository.save(cartItem);
-	    }
-	    return countCartItem(user.getUser_id());
+		if (cartItemOptional.isPresent()) {
+			cartItemOptional.get().setQuantity(requestedTotal);
+			cartItemRepository.save(cartItemOptional.get());
+		} else {
+			CartItems cartItem = new CartItems(user, product, quantity);
+			cartItemRepository.save(cartItem);
+		}
+		return countCartItem(userId);
+	}
+
+	public int addOrUpdateCartItem(AddCartDto addCartDto) {
+		Users user = userRepository.findByUsername(addCartDto.getUsername())
+				.orElseThrow(() -> new RuntimeException("Invalid User"));
+		return addOrUpdateCartItem(user.getUser_id(), addCartDto.getProduct_id(), addCartDto.getQuantity());
 	}
 	
-	
 	public int countCartItem(int userId) {
-	   int count = cartItemRepository.countCartItems(userId);
-	   return count;
+	   return cartItemRepository.countCartItems(userId);
 	}	
-	
 	
 	public int getTotalCartQuantity(String username) {
 	    Users user = userRepository.findByUsername(username)
