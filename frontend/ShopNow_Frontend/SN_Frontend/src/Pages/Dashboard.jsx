@@ -1,7 +1,7 @@
 import Navbar from "../Components/Navbar";
 import Card from "../Components/Card";
 import { UserContext } from "../Context/UserProvider";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { toast } from "react-toastify";
 import CardSkeleton from "../Components/CardSkeleton";
@@ -17,26 +17,112 @@ function Dashboard() {
   const [products, setProducts] = useState([]);
   const { user } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(null);
   const [categoryName, setCategoryName] = useState("");
   const [count, setCount] = useState(0);
+  const sentinelRef = useRef(null);
 
+  // Fetch products whenever page or categoryName changes
   useEffect(() => {
-    setLoading(true);
-    const fetchData = async () => {
+    let isMounted = true;
+    const fetchProducts = async () => {
+      if (page === 0) {
+        setLoading(true);
+        setError(null);
+      } else {
+        setLoadingMore(true);
+        setError(null);
+      }
+
       try {
         const response = await axiosInstance.get("/products", {
-          params: { categoryName },
+          params: {
+            categoryName: categoryName || undefined,
+            page: page,
+            size: 12,
+          },
           withCredentials: true,
         });
-        if (response.status === 200) setProducts(response.data.product);
-      } catch (error) {
-        toast.error(error.response?.data?.error || "Failed to fetch products");
+
+        if (isMounted && response.status === 200) {
+          const newProducts = response.data.products || response.data.product || [];
+          setProducts((prev) => (page === 0 ? newProducts : [...prev, ...newProducts]));
+          setHasMore(response.data.hasMore ?? false);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          const errorMsg =
+            err.response?.data?.error ||
+            err.response?.data?.message ||
+            "Failed to fetch products";
+          toast.error(errorMsg);
+          setError(errorMsg);
+
+          // Roll back page number so it does not drift forward on failure
+          if (page > 0) {
+            setPage((prev) => Math.max(0, prev - 1));
+          }
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     };
-    fetchData();
-  }, [categoryName]);
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [categoryName, page]);
+
+  // IntersectionObserver to auto-fetch next page when scrolling near bottom
+  useEffect(() => {
+    // Early exit if loading, loading more, reached catalog end, or an error occurred
+    if (loading || loadingMore || !hasMore || error) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !error) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "200px",
+        threshold: 0,
+      }
+    );
+
+    const currentSentinel = sentinelRef.current;
+    if (currentSentinel) {
+      observer.observe(currentSentinel);
+    }
+
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
+      }
+    };
+  }, [loading, loadingMore, hasMore, error]);
+
+  const handleCategoryClick = (catName) => {
+    if (categoryName === catName) {
+      setCategoryName("");
+    } else {
+      setCategoryName(catName);
+    }
+    setProducts([]);
+    setPage(0);
+    setHasMore(true);
+    setError(null);
+  };
 
   useEffect(() => {
     if (!user?.username) return;
@@ -108,8 +194,9 @@ function Dashboard() {
               {categories.map((cat) => (
                 <button
                   key={cat.name}
-                  className="flex flex-col justify-center items-center flex-shrink-0 text-center hover:scale-105 transform transition duration-300"
-                  onClick={() => setCategoryName(cat.name)}
+                  className={`flex flex-col justify-center items-center flex-shrink-0 text-center hover:scale-105 transform transition duration-300 p-2 rounded-xl ${categoryName === cat.name ? "bg-blue-100 ring-2 ring-blue-500 shadow-sm" : ""
+                    }`}
+                  onClick={() => handleCategoryClick(cat.name)}
                 >
                   <img
                     src={cat.img}
@@ -126,16 +213,60 @@ function Dashboard() {
 
       <div className="flex flex-wrap justify-center gap-4 sm:gap-6 p-2 sm:p-4 w-auto">
         {loading
-          ? [...Array(15)].map((_, i) => <CardSkeleton key={i} />)
+          ? [...Array(12)].map((_, i) => <CardSkeleton key={i} />)
           : products.map((product) => (
-              <Card
-                key={product.product_id}
-                product={product}
-                onAction={handleCardAction}
-              />
-            ))}
+            <Card
+              key={product.product_id}
+              product={product}
+              onAction={handleCardAction}
+            />
+          ))}
       </div>
-      <footer className="mt-30">
+
+      {/* Invisible Sentinel for Infinite Scroll IntersectionObserver */}
+      <div ref={sentinelRef} className="h-4 w-full" />
+
+      {/* Loading More Spinner */}
+      {loadingMore && (
+        <div className="flex justify-center items-center py-6 w-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600 font-medium text-sm">
+            Loading more products...
+          </span>
+        </div>
+      )}
+
+      {/* Error / Retry Banner for Infinite Scroll */}
+      {error && !loading && (
+        <div className="flex flex-col items-center justify-center py-6 w-full">
+          <p className="text-red-500 text-sm font-medium mb-3">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              setPage((prev) => (prev === 0 ? 0 : prev + 1));
+            }}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition"
+          >
+            Retry Loading Products
+          </button>
+        </div>
+      )}
+
+      {/* End of Catalog Banner */}
+      {!loading && !hasMore && products.length > 0 && (
+        <div className="text-center py-8 text-gray-500 font-medium text-sm w-full">
+          You have reached the end of the catalog.
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && products.length === 0 && (
+        <div className="text-center py-16 text-gray-500 font-medium text-lg w-full">
+          No products found in this category.
+        </div>
+      )}
+
+      <footer className="mt-20">
         <Footer />
       </footer>
     </div>

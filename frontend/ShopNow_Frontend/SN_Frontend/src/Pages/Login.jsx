@@ -11,10 +11,19 @@ function Login() {
   const [Username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
   const el = useRef(null);
   const name = "ShopNow!";
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const interval = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
 
   useEffect(() => {
     const typed = new Typed(el.current, {
@@ -54,7 +63,10 @@ function Login() {
 
   const verifyUser = async (e) => {
     e.preventDefault();
-    // Add your login logic here
+    if (cooldown > 0) {
+      toast.error(`Please wait ${cooldown} seconds before trying again.`);
+      return;
+    }
     if (!validateForm()) {
       return;
     }
@@ -81,6 +93,12 @@ function Login() {
       }
     } catch (error) {
       console.error("Login error:", error);
+      if (error.response?.status === 429) {
+        const seconds = error.retryAfter || 60;
+        setCooldown(seconds);
+        toast.error(`Too many attempts. Please wait ${seconds} seconds.`);
+        return;
+      }
       const errorMassage = error.response?.data?.message;
       console.log("Error message:", errorMassage);
       errorMassage
@@ -93,7 +111,7 @@ function Login() {
     <div
       className="min-h-screen w-full flex flex-col lg:flex-row 
 items-center justify-center lg:justify-around 
-px-4 lg:px-20 gap-8
+px-4 lg:px-20 py-6 sm:py-10 gap-8
 bg-gradient-to-r from-[#ADEFD1] via-[#7FD8BE] to-[#ADEFD1]
 bg-[length:400%_400%] animate-gradient"
     >
@@ -152,11 +170,21 @@ bg-[length:400%_400%] animate-gradient"
               {showPassword ? <FaEye /> : <FaEyeSlash />}
             </button>
           </div>
+          {cooldown > 0 && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm text-center font-medium my-1">
+              Too many attempts. Please try again in <span className="font-bold">{cooldown}s</span>.
+            </div>
+          )}
           <button
             type="submit"
-            className="bg-blue-600  h-12 mt-1 rounded-xl font-semibold text-white text-xl hover:bg-blue-500"
+            disabled={cooldown > 0}
+            className={`h-12 mt-1 rounded-xl font-semibold text-white text-xl transition-colors ${
+              cooldown > 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-500 cursor-pointer"
+            }`}
           >
-            Log In
+            {cooldown > 0 ? `Wait (${cooldown}s)` : "Log In"}
           </button>
         </form>
         <p className="text-center p-2 text-md ">

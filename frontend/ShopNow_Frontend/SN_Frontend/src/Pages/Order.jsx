@@ -52,7 +52,7 @@ function Order() {
           </button>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-green-600 mt-6 sm:mt-10">
-            🎉 Thank You for Your Order!
+            Thank You for Your Order!
           </h1>
 
           <p className="text-gray-600 text-base sm:text-lg p-4 bg-green-50 border border-green-500 rounded-lg mt-6">
@@ -63,7 +63,7 @@ function Order() {
 
         {/* RIGHT SIDE – ORDER ITEM CARDS */}
         <div className="w-full lg:w-1/2 h-auto">
-          <h2 className="text-2xl font-medium mb-4">🛒 Order Items</h2>
+          <h2 className="text-2xl font-medium mb-4">Order Items</h2>
 
           {data.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 mb-4">

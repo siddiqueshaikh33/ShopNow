@@ -155,7 +155,7 @@ function Cart() {
       }
       // Optionally, you can clear the cart or redirect the user
       setCartItems([]);
-    } catch (error) {
+    } catch {
       toast.error("Failed to verify payment");
     } finally {
       setClick(false);
@@ -192,7 +192,7 @@ function Cart() {
               </div>
             ) : (
               <p className="text-gray-600 text-2xl sm:text-4xl flex font-semibold justify-center items-center h-57 text-center px-4">
-                Your cart is empty 🛒
+                Your cart is empty.
               </p>
             )}
           </div>
