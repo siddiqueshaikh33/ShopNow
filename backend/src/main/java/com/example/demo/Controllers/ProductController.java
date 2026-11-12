@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,7 +46,7 @@ public class ProductController {
 				return ResponseEntity.status(401).body(Map.of("Error", "Unauthorize User"));
 			}
 
-			Pageable pageable = PageRequest.of(page, size);
+			Pageable pageable = PageRequest.of(page, size, Sort.by("productId").ascending());
 			Slice<ProductResponseDto> productSlice = productService.getProductDtosByCategoryId(categoryName, pageable);
 
 			// Fallback if mocked or legacy callers only stubbed the 1-argument method
