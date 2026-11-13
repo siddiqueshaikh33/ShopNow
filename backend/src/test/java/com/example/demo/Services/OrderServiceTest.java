@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -295,6 +296,32 @@ class OrderServiceTest {
         assertTrue(result);
         assertEquals(Status.SUCCESS, successOrder.getStatus());
         verify(orderRepo, never()).save(successOrder);
+    }
+
+    @Test
+    @DisplayName("Should bubble database exceptions in verifyOrder to allow Spring @Transactional to rollback")
+    void testVerifyOrder_DatabaseException_ThrowsExceptionToTriggerRollback() {
+        String orderId = "order_test_fail_db";
+        Orders order = new Orders();
+        order.setId(orderId);
+        order.setUser(testUser);
+        order.setStatus(Status.PENDING);
+        order.setTotal_amount(new BigDecimal("100.00"));
+
+        Products product = new Products();
+        product.setProduct_id(101);
+        OrderItems item = new OrderItems();
+        item.setOrders(order);
+        item.setProducts(product);
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemsRepository.findByOrders_Id(orderId)).thenReturn(List.of(item));
+        doThrow(new RuntimeException("Database constraint failure during cart deletion"))
+                .when(cartItemRepository).deleteCartItemsByUserIdAndProductIds(eq(1), any());
+
+        assertThrows(RuntimeException.class, () ->
+                orderService.verifyOrder("pay_123", orderId, "sig_valid", testUser)
+        );
     }
 
     @Test

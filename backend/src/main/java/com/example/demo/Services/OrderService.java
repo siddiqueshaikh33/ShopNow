@@ -133,52 +133,47 @@ public class OrderService {
 
 	@Transactional
 	public boolean verifyOrder(String razorpayPaymentId, String razorpayOrderId, String razorpaySignature, Users user) {
-		try {
-			JSONObject payload = new JSONObject();
-			payload.put("razorpay_payment_id", razorpayPaymentId);
-			payload.put("razorpay_order_id", razorpayOrderId);
-			payload.put("razorpay_signature", razorpaySignature);
+		JSONObject payload = new JSONObject();
+		payload.put("razorpay_payment_id", razorpayPaymentId);
+		payload.put("razorpay_order_id", razorpayOrderId);
+		payload.put("razorpay_signature", razorpaySignature);
 
-			boolean verifySignature = verifyPaymentSignature(payload, razorpaySecret);
-
-			if (verifySignature) {
-				Orders order = orderRepo.findById(razorpayOrderId)
-						.orElseThrow(() -> new RuntimeException("Order not found!"));
-
-				if (order.getUser().getUser_id() != user.getUser_id()) {
-					throw new RuntimeException("Unauthorized order access");
-				}
-
-				if (order.getStatus() == Status.SUCCESS) {
-					log.info("Order {} is already marked SUCCESS (idempotent verification)", razorpayOrderId);
-					return true;
-				}
-
-				if (order.getStatus() != Status.PENDING) {
-					log.warn("Cannot verify order {}: current status is {} (must be PENDING)", razorpayOrderId, order.getStatus());
-					return false;
-				}
-
-				order.setStatus(Status.SUCCESS);
-				orderRepo.save(order);
-
-				List<OrderItems> orderItems = orderItemsRepository.findByOrders_Id(razorpayOrderId);
-				List<Integer> purchasedProductIds = orderItems.stream()
-						.map(oi -> oi.getProducts().getProduct_id())
-						.distinct()
-						.toList();
-
-				if (!purchasedProductIds.isEmpty()) {
-					cartItemRepository.deleteCartItemsByUserIdAndProductIds(user.getUser_id(), purchasedProductIds);
-				}
-
-				return true;
-			} else {
-				return false;
-			}
-		} catch (Exception e) {
-			log.error("Payment verification error", e);
+		boolean verifySignature = verifyPaymentSignature(payload, razorpaySecret);
+		if (!verifySignature) {
+			log.warn("Payment verification failed: invalid HMAC signature for order {}", razorpayOrderId);
 			return false;
 		}
+
+		Orders order = orderRepo.findById(razorpayOrderId)
+				.orElseThrow(() -> new RuntimeException("Order not found!"));
+
+		if (order.getUser().getUser_id() != user.getUser_id()) {
+			throw new RuntimeException("Unauthorized order access");
+		}
+
+		if (order.getStatus() == Status.SUCCESS) {
+			log.info("Order {} is already marked SUCCESS (idempotent verification)", razorpayOrderId);
+			return true;
+		}
+
+		if (order.getStatus() != Status.PENDING) {
+			log.warn("Cannot verify order {}: current status is {} (must be PENDING)", razorpayOrderId, order.getStatus());
+			return false;
+		}
+
+		order.setStatus(Status.SUCCESS);
+		orderRepo.save(order);
+
+		List<OrderItems> orderItems = orderItemsRepository.findByOrders_Id(razorpayOrderId);
+		List<Integer> purchasedProductIds = orderItems.stream()
+				.map(oi -> oi.getProducts().getProduct_id())
+				.distinct()
+				.toList();
+
+		if (!purchasedProductIds.isEmpty()) {
+			cartItemRepository.deleteCartItemsByUserIdAndProductIds(user.getUser_id(), purchasedProductIds);
+		}
+
+		return true;
 	}
 }
