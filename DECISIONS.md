@@ -162,6 +162,21 @@ Every decision entry must use this exact format:
 - Where in code: `CartController.java`, `CartService.java`, `Dashboard.jsx`, `CartControllerTest.java`.
 - Revisit when: Transitioning to anonymous guest cart sessions merged upon login.
 
+### D-009: State Guards, Duplicate Key Collision Resilience, and Soft-Deletion Architecture
+- Date: 2026-11-13
+- Status: Accepted
+- Problem: Three distinct data integrity and concurrency flaws existed: (1) `verifyOrder` allowed transitioning cancelled/expired orders to `SUCCESS`, triggering inventory double-selling; (2) `Collectors.toMap` in `CartService` crashed with unhandled 500 when products had multiple images; (3) hard-deleting products caused foreign key violations or historical order item deletion.
+- Options considered:
+  - Option A: Re-deduct stock during verification if cancelled, catch `IllegalStateException` on map collection, and use ON DELETE CASCADE for products. Rejected because cascading deletes wipe out audit/tax history, and re-deducting stock fails when warehouse stock is 0.
+  - Option B: Explicit state guards, stream merge functions, and soft-delete entity lifecycles. Restrict `verifyOrder` strictly to `PENDING` (with idempotent `SUCCESS` pass-through), provide binary operator `(a, b) -> a` in `toMap`, and introduce `is_active` boolean on `Products` with catalog query filters.
+- Decision: Option B
+- Why chosen: Zero data loss, preserves financial order history, completely eliminates double-sell race conditions, and guarantees cart loading resilience.
+- Why the others were NOT chosen: Option A compromises relational integrity and destroys financial records.
+- Risks / known downsides of the chosen option: Soft-deleted products remain in the database indefinitely, requiring periodic indexing or archival if the catalog grows to millions of inactive items.
+- How to verify it works: Unit tests verifying cancelled orders are rejected during verification; unit tests verifying idempotent success; cart items fetch without error; admin delete sets `isActive = false` and filters out of catalog.
+- Where in code: `OrderService.java`, `CartService.java`, `Products.java`, `ProductRepository.java`, `AdminDeleteController.java`, `OrderServiceTest.java`.
+- Revisit when: Developing an administrative data retention and purge policy for products inactive for > 5 years.
+
 # Open items / backlog
 
 # Concepts learned
@@ -189,6 +204,8 @@ Every decision entry must use this exact format:
 - Infinite scroll circuit breaking: Unhandled API errors during infinite scroll cause runaway request loops if the observer sentinel remains in view; pausing the observer, setting an explicit error state, rolling back the page counter, and providing a manual retry button protects both the client and server.
 - E-commerce inventory ceiling vs. immediate reservation: Carting items enforces available inventory limits (ceiling) without deducting warehouse stock until payment creation, preventing cart-abandonment hoarding denial-of-service while protecting shoppers from overselling.
 - Server-Side Principal Binding vs. Client-Supplied Identifiers: Private user operations (such as adding items to cart or reading cart count) must strictly bind to the authenticated principal (`Authorized_User`) extracted from the verified session token, never trusting client-supplied `username` or `userId` in JSON request bodies or URL parameters, which eliminates Broken Access Control / IDOR (CWE-639) vulnerabilities.
+- Soft-Delete vs. Physical Removal in E-Commerce Relational Models: Physical hard-deletion (`DELETE FROM products`) breaks foreign key constraints in `order_items` and destroys tax and order history; soft-deletion using a boolean `is_active` flag combined with query-level filtering preserves complete auditability while instantly hiding retired items from customer catalogs.
+- State Machine Transition Guards in Asynchronous Payment Lifecycles: Multi-step checkouts involving third-party gateways (Razorpay, Stripe) must enforce explicit state transition guards before setting `SUCCESS` to prevent zombie transitions from `CANCELLED` states caused by delayed webhooks or user callbacks after expiry cleanup.
 
 # Archive
 
