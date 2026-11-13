@@ -259,6 +259,45 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("Should return false when order is CANCELLED to prevent zombie order double-selling")
+    void testVerifyOrder_CancelledOrder_ReturnsFalseAndDoesNotMutateOrder() {
+        String orderId = "order_test_cancelled";
+        Orders cancelledOrder = new Orders();
+        cancelledOrder.setId(orderId);
+        cancelledOrder.setUser(testUser);
+        cancelledOrder.setStatus(Status.CANCELLED);
+        cancelledOrder.setTotal_amount(new BigDecimal("100.00"));
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(cancelledOrder));
+
+        boolean result = orderService.verifyOrder("pay_123", orderId, "sig_valid", testUser);
+
+        assertFalse(result);
+        assertEquals(Status.CANCELLED, cancelledOrder.getStatus());
+        verify(orderRepo, never()).save(cancelledOrder);
+        verify(cartItemRepository, never()).deleteCartItemsByUserIdAndProductIds(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return true idempotently when order is already marked SUCCESS")
+    void testVerifyOrder_AlreadySuccess_ReturnsTrueIdempotently() {
+        String orderId = "order_test_already_success";
+        Orders successOrder = new Orders();
+        successOrder.setId(orderId);
+        successOrder.setUser(testUser);
+        successOrder.setStatus(Status.SUCCESS);
+        successOrder.setTotal_amount(new BigDecimal("100.00"));
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(successOrder));
+
+        boolean result = orderService.verifyOrder("pay_123", orderId, "sig_valid", testUser);
+
+        assertTrue(result);
+        assertEquals(Status.SUCCESS, successOrder.getStatus());
+        verify(orderRepo, never()).save(successOrder);
+    }
+
+    @Test
     @DisplayName("Should delete child order items before deleting pending parent orders older than 7 days")
     void testHandleOrderPendingDeletion_DeletesItemsThenOrders() {
         when(orderItemsRepository.deleteByOrdersStatusAndCreatedAtBefore(any(), any())).thenReturn(5);

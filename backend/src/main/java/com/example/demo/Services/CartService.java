@@ -86,8 +86,13 @@ public class CartService {
 		List<Integer> allProductId = cartItems.stream().map(ci -> ci.getProduct().getProduct_id()).distinct().toList();
 		
 		
-		Map<Integer,String> allProductImgMap = productImgRepository.findImageByListOfProductId(allProductId)
-				.stream().collect(Collectors.toMap(pid -> pid.getProducts().getProduct_id(), pimg -> pimg.getImageUrl()));
+		Map<Integer, String> allProductImgMap = productImgRepository.findImageByListOfProductId(allProductId)
+				.stream()
+				.collect(Collectors.toMap(
+						pid -> pid.getProducts().getProduct_id(),
+						pimg -> pimg.getImageUrl(),
+						(existingUrl, duplicateUrl) -> existingUrl
+				));
 		
 		 BigDecimal overallTotal = BigDecimal.ZERO;
 		responseMap.put("user", users.getUsername());

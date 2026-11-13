@@ -44,6 +44,9 @@ public class Products {
     @Column(nullable = false)
     private Long version = 0L;
     
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+    
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Categories categories;
@@ -187,6 +190,14 @@ public class Products {
 
 	public void setUpdated_at(LocalDateTime updated_at) {
 		this.updated_at = updated_at;
+	}
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean active) {
+		this.isActive = active;
 	}
   
 }

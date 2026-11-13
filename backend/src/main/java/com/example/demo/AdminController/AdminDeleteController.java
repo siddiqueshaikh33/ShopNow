@@ -61,7 +61,8 @@ public class AdminDeleteController {
 		
 		Products products = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("No product found"));
 		
-		productRepository.deleteById(products.getProduct_id());
+		products.setActive(false);
+		productRepository.save(products);
 		
 		return ResponseEntity.ok().build();
 	} catch (Exception e) {

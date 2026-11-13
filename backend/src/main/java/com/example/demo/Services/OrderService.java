@@ -149,6 +149,16 @@ public class OrderService {
 					throw new RuntimeException("Unauthorized order access");
 				}
 
+				if (order.getStatus() == Status.SUCCESS) {
+					log.info("Order {} is already marked SUCCESS (idempotent verification)", razorpayOrderId);
+					return true;
+				}
+
+				if (order.getStatus() != Status.PENDING) {
+					log.warn("Cannot verify order {}: current status is {} (must be PENDING)", razorpayOrderId, order.getStatus());
+					return false;
+				}
+
 				order.setStatus(Status.SUCCESS);
 				orderRepo.save(order);
 

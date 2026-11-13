@@ -14,15 +14,15 @@ import com.example.demo.Entity.Products;
 @Repository
 public interface ProductRepository extends JpaRepository<Products, Integer> {
 
-	@Query("SELECT DISTINCT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories")
+	@Query("SELECT DISTINCT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories WHERE p.isActive = true")
 	List<Products> findAllWithPrimaryImage();
 
-	@Query("SELECT DISTINCT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories WHERE p.categories.categoryId = :categoryId")
+	@Query("SELECT DISTINCT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories WHERE p.categories.categoryId = :categoryId AND p.isActive = true")
 	List<Products> findByCategories_CategoryIdWithPrimaryImage(@Param("categoryId") int categoryId);
 
-	@Query("SELECT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories")
+	@Query("SELECT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories WHERE p.isActive = true")
 	Slice<Products> findAllWithPrimaryImage(Pageable pageable);
 
-	@Query("SELECT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories WHERE p.categories.categoryId = :categoryId")
+	@Query("SELECT p FROM Products p LEFT JOIN FETCH p.primaryImage LEFT JOIN FETCH p.categories WHERE p.categories.categoryId = :categoryId AND p.isActive = true")
 	Slice<Products> findByCategories_CategoryIdWithPrimaryImage(@Param("categoryId") int categoryId, Pageable pageable);
 }
