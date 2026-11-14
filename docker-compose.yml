@@ -36,8 +36,8 @@ services:
       JWT_EXP: "3600000"
       RAZORPAY_ID: rzp_test_S2U9gv9j73J8pb
       RAZORPAY_SECERT: fw8VzYtunqfnfN3R90FMCBHx
-      GOOGLE_ID: 385419819892-bag09tesu02v5lg5o7oc1vss59dbcl0d.apps.googleusercontent.com
-      GOOGLE_SECRET: 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
+      GOOGLE_ID: ${GOOGLE_ID:-your-google-client-id.apps.googleusercontent.com}
+      GOOGLE_SECRET: ${GOOGLE_SECRET:-your-google-client-secret}
     ports:
       - "8080:8080"
     networks:
