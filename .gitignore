@@ -21,4 +21,6 @@ backend/.env*
 # ================= COMMON =================
 .env
 *.pdf
+ShopNow_Secrets_Backup.html
+
 
