@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = "http://localhost:5173/", allowCredentials = "true")
 public class AdminDeleteController {
 	
 	private ProductRepository productRepository;

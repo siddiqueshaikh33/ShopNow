@@ -17,7 +17,6 @@ import com.example.demo.Entity.Users;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173/", allowCredentials = "true")
 @RequestMapping("/admin")
 public class AdminModifyUserController {
     
