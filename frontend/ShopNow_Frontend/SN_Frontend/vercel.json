@@ -1,6 +1,22 @@
 {
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://shopnow-oy01.onrender.com/api/:path*"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://shopnow-oy01.onrender.com/admin/:path*"
+    },
+    {
+      "source": "/oauth2/:path*",
+      "destination": "https://shopnow-oy01.onrender.com/oauth2/:path*"
+    },
+    {
+      "source": "/login/oauth2/:path*",
+      "destination": "https://shopnow-oy01.onrender.com/login/oauth2/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

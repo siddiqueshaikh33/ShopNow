@@ -1,7 +1,14 @@
 import axios from "axios";
 
+// In local dev, talk directly to localhost:8080.
+// In production on Vercel, route through /api reverse proxy so cookies are 1st-party.
+const rawApiBase = import.meta.env.VITE_API_BASE_URL;
+const resolvedBaseURL = import.meta.env.DEV
+  ? (rawApiBase || "http://localhost:8080/api")
+  : (rawApiBase && !rawApiBase.startsWith("http") ? rawApiBase : "/api");
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
+  baseURL: resolvedBaseURL,
   withCredentials: true,
 });
 

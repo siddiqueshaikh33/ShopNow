@@ -225,6 +225,7 @@ Every decision entry must use this exact format:
 - Cross-Site Cookies in Decoupled Cloud Deployments: When frontend (Vercel) and backend (Render) reside on separate domains, browsers reject cookies unless marked with `SameSite=None; Secure`. In development (HTTP/localhost), `SameSite=Lax` or `Strict` without `Secure` is required.
 - Spring CORS with Credentials: When `allowCredentials=true`, Spring Security forbids `allowedOrigins("*")`. Using `setAllowedOriginPatterns` with wildcard subdomains (e.g. `https://*.vercel.app`) allows credentials on dynamically generated deployment previews without compromising security.
 - Reverse Proxy SSL Forwarding: Containers deployed behind cloud reverse proxies (Render, AWS ALB, Cloudflare) require `server.forward-headers-strategy=framework` so that Spring Security OAuth2 constructs `{baseUrl}` using `https://` from `X-Forwarded-Proto` rather than the internal container's plain `http://`.
+- Vercel Edge Reverse Proxy (BFF Pattern): Overcoming browser third-party cookie restrictions by proxying API paths (/api/*, /admin/*) through the frontend domain via vercel.json rewrites; treats authentication cookies as first-party cookies, bypassing cross-site cookie deprecation while eliminating CORS preflight overhead.
 
 # Archive
 
