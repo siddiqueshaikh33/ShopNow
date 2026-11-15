@@ -44,7 +44,9 @@ public class AuthFilter extends OncePerRequestFilter {
 
         String reqUrl = req.getRequestURI();
 
-        if (reqUrl.startsWith("/oauth2") ||
+        if (reqUrl.equals("/") ||
+            reqUrl.equals("/api/health") ||
+            reqUrl.startsWith("/oauth2") ||
             reqUrl.startsWith("/login/oauth2") ||
             reqUrl.startsWith("/api/auth/login") ||
             reqUrl.startsWith("/api/users")) {

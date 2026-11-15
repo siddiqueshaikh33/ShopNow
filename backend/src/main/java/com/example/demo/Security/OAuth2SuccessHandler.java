@@ -3,6 +3,7 @@ package com.example.demo.Security;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -26,11 +27,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
+    private final String frontendUrl;
 
-    public OAuth2SuccessHandler(UserRepository userRepository, AuthService authService, RefreshTokenService refreshTokenService) {
+    public OAuth2SuccessHandler(
+            UserRepository userRepository,
+            AuthService authService,
+            RefreshTokenService refreshTokenService,
+            @Value("${app.frontend.url:http://localhost:5173}") String frontendUrl
+    ) {
         this.userRepository = userRepository;
         this.authService = authService;
         this.refreshTokenService = refreshTokenService;
+        this.frontendUrl = frontendUrl;
     }
 
     @Override
@@ -69,6 +77,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         authService.addCookietoClient(response, jwtToken);
         response.addHeader(HttpHeaders.SET_COOKIE, authService.createRefreshTokenCookie(rawRefreshToken).toString());
 
-        response.sendRedirect("http://localhost:5173/dashboard");
+        response.sendRedirect(this.frontendUrl + "/dashboard");
     }
 }

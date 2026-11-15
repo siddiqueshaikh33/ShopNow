@@ -177,6 +177,22 @@ Every decision entry must use this exact format:
 - Where in code: `OrderService.java`, `CartService.java`, `Products.java`, `ProductRepository.java`, `AdminDeleteController.java`, `OrderServiceTest.java`.
 - Revisit when: Developing an administrative data retention and purge policy for products inactive for > 5 years.
 
+### D-010: Cross-Origin Wildcard Patterns, Cross-Site Cookie Policy, and Reverse Proxy Forwarding for Cloud Deployments
+- Date: 2026-11-15
+- Status: Accepted
+- Problem: Deploying frontend (Vercel) and backend (Render) on separate cloud providers caused three critical production failures: (1) browser CORS policy blocked all API requests because `SecurityConfig` only allowed `localhost:5173`; (2) browser blocked cross-site authentication cookies due to `SameSite=Lax/Strict`; (3) Google OAuth redirected to hardcoded `localhost:5173` with broken HTTP callback URLs behind Render's reverse proxy.
+- Options considered:
+  - Option A: Host frontend and backend on the same domain behind a reverse proxy (e.g., custom Nginx / Cloudflare route). Adds extra infrastructure costs and configuration complexity unnecessary for current Vercel/Render architecture.
+  - Option B: Switch from HttpOnly cookies to Authorization Bearer headers stored in browser localStorage. Vulnerable to Cross-Site Scripting (XSS) token theft and violates `AGENTS.md` security requirements.
+  - Option C: Configure Spring CORS with `setAllowedOriginPatterns` (`https://*.vercel.app`, `FRONTEND_URL`), dynamic cookie `SameSite=None; Secure` in HTTPS production (with `Lax/Strict` local HTTP fallback), `server.forward-headers-strategy=framework`, externalized OAuth2 redirect configuration, and a dedicated root health check controller (`GET /`).
+- Decision: Option C
+- Why chosen: Preserves XSS-resistant HttpOnly cookie security across decoupled cloud providers, supports automatic Vercel preview branch deployments without manual domain configuration, and ensures Render health checks succeed immediately with HTTP 200.
+- Why the others were NOT chosen: Option A adds infrastructure overhead; Option B compromises authentication security by exposing tokens to client-side JavaScript.
+- Risks / known downsides of the chosen option: `SameSite=None; Secure` cookies require HTTPS in production; local development must keep `cookie.secure=false` to avoid browser rejection on plain HTTP localhost.
+- How to verify it works: Automated Spring MockMvc tests verifying CORS preflight headers on Vercel origins, `SameSite=None; Secure` cookies when `cookie.secure=true`, root health check returns HTTP 200 `{"status": "UP"}`, and all 78 backend tests pass.
+- Where in code: `SecurityConfig.java`, `AuthService.java`, `OAuth2SuccessHandler.java`, `HealthController.java`, `HealthControllerTest.java`, `AuthServiceTest.java`, `application.properties`, `application-prod.properties`.
+- Revisit when: Migrating to a unified single-domain production deployment (e.g. `api.shopnow.com` and `shopnow.com`).
+
 # Open items / backlog
 
 # Concepts learned
@@ -206,6 +222,9 @@ Every decision entry must use this exact format:
 - Server-Side Principal Binding vs. Client-Supplied Identifiers: Private user operations (such as adding items to cart or reading cart count) must strictly bind to the authenticated principal (`Authorized_User`) extracted from the verified session token, never trusting client-supplied `username` or `userId` in JSON request bodies or URL parameters, which eliminates Broken Access Control / IDOR (CWE-639) vulnerabilities.
 - Soft-Delete vs. Physical Removal in E-Commerce Relational Models: Physical hard-deletion (`DELETE FROM products`) breaks foreign key constraints in `order_items` and destroys tax and order history; soft-deletion using a boolean `is_active` flag combined with query-level filtering preserves complete auditability while instantly hiding retired items from customer catalogs.
 - State Machine Transition Guards in Asynchronous Payment Lifecycles: Multi-step checkouts involving third-party gateways (Razorpay, Stripe) must enforce explicit state transition guards before setting `SUCCESS` to prevent zombie transitions from `CANCELLED` states caused by delayed webhooks or user callbacks after expiry cleanup.
+- Cross-Site Cookies in Decoupled Cloud Deployments: When frontend (Vercel) and backend (Render) reside on separate domains, browsers reject cookies unless marked with `SameSite=None; Secure`. In development (HTTP/localhost), `SameSite=Lax` or `Strict` without `Secure` is required.
+- Spring CORS with Credentials: When `allowCredentials=true`, Spring Security forbids `allowedOrigins("*")`. Using `setAllowedOriginPatterns` with wildcard subdomains (e.g. `https://*.vercel.app`) allows credentials on dynamically generated deployment previews without compromising security.
+- Reverse Proxy SSL Forwarding: Containers deployed behind cloud reverse proxies (Render, AWS ALB, Cloudflare) require `server.forward-headers-strategy=framework` so that Spring Security OAuth2 constructs `{baseUrl}` using `https://` from `X-Forwarded-Proto` rather than the internal container's plain `http://`.
 
 # Archive
 

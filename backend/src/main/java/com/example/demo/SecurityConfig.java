@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,7 @@ import com.example.demo.Filter.AuthFilter;
 import com.example.demo.Filter.RateLimitingFilter;
 import com.example.demo.Security.OAuth2SuccessHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,20 +27,35 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final AuthFilter AuthFilter;
     private final RateLimitingFilter rateLimitingFilter;
+    private final String frontendUrl;
 
-    public SecurityConfig(OAuth2SuccessHandler oAuth2SuccessHandler, AuthFilter AuthFilter, RateLimitingFilter rateLimitingFilter) {
+    public SecurityConfig(
+            OAuth2SuccessHandler oAuth2SuccessHandler,
+            AuthFilter AuthFilter,
+            RateLimitingFilter rateLimitingFilter,
+            @Value("${app.frontend.url:http://localhost:5173}") String frontendUrl
+    ) {
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
         this.AuthFilter = AuthFilter;
         this.rateLimitingFilter = rateLimitingFilter;
+        this.frontendUrl = frontendUrl;
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setExposedHeaders(List.of("Retry-After", "X-Rate-Limit-Remaining"));
+        List<String> allowedPatterns = new ArrayList<>(List.of(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://*.vercel.app"
+        ));
+        if (frontendUrl != null && !frontendUrl.isBlank() && !allowedPatterns.contains(frontendUrl.trim())) {
+            allowedPatterns.add(frontendUrl.trim());
+        }
+        config.setAllowedOriginPatterns(allowedPatterns);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+        config.setExposedHeaders(List.of("Retry-After", "X-Rate-Limit-Remaining", "Set-Cookie"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -61,7 +78,7 @@ public class SecurityConfig {
         );
         
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/error").permitAll()
+                .requestMatchers("/", "/error", "/api/health").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/**").permitAll()

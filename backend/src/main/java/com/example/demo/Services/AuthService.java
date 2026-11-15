@@ -108,51 +108,56 @@ public class AuthService {
 	}
 
 	public ResponseCookie createAccessTokenCookie(String token) {
+		String sameSite = this.cookieSecure ? "None" : "Lax";
 		return ResponseCookie.from("accessToken", token)
 				.path("/")
 				.maxAge(Duration.ofMinutes(15))
 				.httpOnly(true)
-				.sameSite("Lax")
+				.sameSite(sameSite)
 				.secure(this.cookieSecure)
 				.build();
 	}
 
 	public ResponseCookie createRefreshTokenCookie(String rawRefreshToken) {
+		String sameSite = this.cookieSecure ? "None" : "Strict";
 		return ResponseCookie.from("refreshToken", rawRefreshToken)
 				.path("/api/auth")
 				.maxAge(Duration.ofDays(7))
 				.httpOnly(true)
-				.sameSite("Strict")
+				.sameSite(sameSite)
 				.secure(this.cookieSecure)
 				.build();
 	}
 
 	public ResponseCookie clearAccessTokenCookie() {
+		String sameSite = this.cookieSecure ? "None" : "Lax";
 		return ResponseCookie.from("accessToken", "")
 				.path("/")
 				.maxAge(0)
 				.httpOnly(true)
-				.sameSite("Lax")
+				.sameSite(sameSite)
 				.secure(this.cookieSecure)
 				.build();
 	}
 
 	public ResponseCookie clearRefreshTokenCookie() {
+		String sameSite = this.cookieSecure ? "None" : "Strict";
 		return ResponseCookie.from("refreshToken", "")
 				.path("/api/auth")
 				.maxAge(0)
 				.httpOnly(true)
-				.sameSite("Strict")
+				.sameSite(sameSite)
 				.secure(this.cookieSecure)
 				.build();
 	}
 
 	public ResponseCookie clearLegacyTokenCookie() {
+		String sameSite = this.cookieSecure ? "None" : "Lax";
 		return ResponseCookie.from("token", "")
 				.path("/")
 				.maxAge(0)
 				.httpOnly(true)
-				.sameSite("Lax")
+				.sameSite(sameSite)
 				.secure(this.cookieSecure)
 				.build();
 	}
@@ -162,11 +167,12 @@ public class AuthService {
 		response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
 		// Legacy token cookie for backward compatibility with older clients
+		String sameSite = this.cookieSecure ? "None" : "Lax";
 		ResponseCookie legacyCookie = ResponseCookie.from("token", token)
 				.path("/")
 				.maxAge(Duration.ofMinutes(15))
 				.httpOnly(true)
-				.sameSite("Lax")
+				.sameSite(sameSite)
 				.secure(this.cookieSecure)
 				.build();
 		response.addHeader(HttpHeaders.SET_COOKIE, legacyCookie.toString());

@@ -240,5 +240,7 @@ class AuthServiceTest {
 
         assertTrue(accessCookie.isSecure());
         assertTrue(refreshCookie.isSecure());
+        assertEquals("None", accessCookie.getSameSite());
+        assertEquals("None", refreshCookie.getSameSite());
     }
 }
