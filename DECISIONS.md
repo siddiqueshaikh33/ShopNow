@@ -226,6 +226,8 @@ Every decision entry must use this exact format:
 - Spring CORS with Credentials: When `allowCredentials=true`, Spring Security forbids `allowedOrigins("*")`. Using `setAllowedOriginPatterns` with wildcard subdomains (e.g. `https://*.vercel.app`) allows credentials on dynamically generated deployment previews without compromising security.
 - Reverse Proxy SSL Forwarding: Containers deployed behind cloud reverse proxies (Render, AWS ALB, Cloudflare) require `server.forward-headers-strategy=framework` so that Spring Security OAuth2 constructs `{baseUrl}` using `https://` from `X-Forwarded-Proto` rather than the internal container's plain `http://`.
 - Vercel Edge Reverse Proxy (BFF Pattern): Overcoming browser third-party cookie restrictions by proxying API paths (/api/*, /admin/*) through the frontend domain via vercel.json rewrites; treats authentication cookies as first-party cookies, bypassing cross-site cookie deprecation while eliminating CORS preflight overhead.
+- Frontend Async State Mutual Exclusivity: In React data-fetching feeds, empty state cards (`items.length === 0`) must be explicitly guarded with `!loading && !error` to prevent both the error banner and the empty catalog card from rendering simultaneously when an API call fails.
+- React State Update Identity Bailout: Calling `setState(0)` when `state` is already `0` produces an identical primitive value (`Object.is(0, 0)`), causing React to bail out without triggering dependent `useEffect` hooks. Re-fetching failed initial pages (`page === 0`) requires an incremental trigger or dedicated fetch callback to reliably force re-evaluation.
 
 # Archive
 

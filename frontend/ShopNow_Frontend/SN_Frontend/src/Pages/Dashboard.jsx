@@ -24,10 +24,11 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [categoryName, setCategoryName] = useState("");
   const [count, setCount] = useState(0);
+  const [retryTrigger, setRetryTrigger] = useState(0);
   const sentinelRef = useRef(null);
   const isFetchingRef = useRef(false);
 
-  // Fetch products whenever page or categoryName changes
+  // Fetch products whenever page, categoryName, or retryTrigger changes
   useEffect(() => {
     let isMounted = true;
     const fetchProducts = async () => {
@@ -71,7 +72,7 @@ function Dashboard() {
           const errorMsg =
             err.response?.data?.error ||
             err.response?.data?.message ||
-            "Failed to fetch products";
+            "Something went wrong. Please try again after some time.";
           toast.error(errorMsg);
           setError(errorMsg);
 
@@ -94,7 +95,7 @@ function Dashboard() {
     return () => {
       isMounted = false;
     };
-  }, [categoryName, page]);
+  }, [categoryName, page, retryTrigger]);
 
   // IntersectionObserver to auto-fetch next page when scrolling near bottom
   useEffect(() => {
@@ -132,12 +133,24 @@ function Dashboard() {
     };
   }, [loading, loadingMore, hasMore, error]);
 
+  const handleRetry = () => {
+    isFetchingRef.current = false;
+    setError(null);
+    if (page === 0) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+    setRetryTrigger((prev) => prev + 1);
+  };
+
   const handleCategoryClick = (catName) => {
     isFetchingRef.current = false;
-    if (categoryName === catName) {
-      setCategoryName("");
+    const nextCat = categoryName === catName ? "" : catName;
+    if (nextCat === categoryName) {
+      setRetryTrigger((prev) => prev + 1);
     } else {
-      setCategoryName(catName);
+      setCategoryName(nextCat);
     }
     setProducts([]);
     setPage(0);
@@ -313,10 +326,7 @@ function Dashboard() {
             <p className="text-red-600 text-xs font-semibold mb-3">{error}</p>
             <button
               type="button"
-              onClick={() => {
-                setError(null);
-                setPage((prev) => (prev === 0 ? 0 : prev + 1));
-              }}
+              onClick={handleRetry}
               className="px-4 py-2 bg-slate-900 hover:bg-[#062828] text-white text-xs font-semibold rounded-xl transition shadow-xs cursor-pointer"
               style={{ borderBottom: "2px solid #ADEFD1" }}
             >
@@ -326,7 +336,7 @@ function Dashboard() {
         )}
 
         {/* End of Catalog Banner */}
-        {!loading && !hasMore && products.length > 0 && (
+        {!loading && !error && !hasMore && products.length > 0 && (
           <div className="text-center py-10 w-full">
             <span className="inline-block px-4 py-1.5 rounded-full bg-slate-200/60 text-slate-600 text-xs font-medium">
               You have reached the end of the catalog.
@@ -335,7 +345,7 @@ function Dashboard() {
         )}
 
         {/* Empty State */}
-        {!loading && products.length === 0 && (
+        {!loading && !error && products.length === 0 && (
           <div className="max-w-md mx-auto my-16 p-8 bg-white border border-slate-200/90 rounded-2xl shadow-sm text-center">
             <h3 className="text-base font-bold text-slate-900 mb-1">
               No products found
