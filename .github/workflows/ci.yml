@@ -12,6 +12,17 @@ jobs:
   backend-ci:
     name: Backend CI (Java 17 + Spring Boot)
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: pass123
+          MYSQL_DATABASE: shopnow
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,9 +38,14 @@ jobs:
         run: chmod +x mvnw
         working-directory: backend
 
-      - name: Run Backend Unit & Integration Tests (74 Tests)
+      - name: Run Backend Unit & Integration Tests (87 Tests)
         run: ./mvnw clean verify -B
         working-directory: backend
+        env:
+          DB_URL: jdbc:mysql://localhost:3306/shopnow
+          DB_USER: root
+          DB_PASSWORD: pass123
+          SPRING_PROFILES_ACTIVE: local
 
   frontend-ci:
     name: Frontend CI (React 19 + Vite)

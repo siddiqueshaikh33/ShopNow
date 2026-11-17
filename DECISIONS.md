@@ -193,6 +193,22 @@ Every decision entry must use this exact format:
 - Where in code: `SecurityConfig.java`, `AuthService.java`, `OAuth2SuccessHandler.java`, `HealthController.java`, `HealthControllerTest.java`, `AuthServiceTest.java`, `application.properties`, `application-prod.properties`.
 - Revisit when: Migrating to a unified single-domain production deployment (e.g. `api.shopnow.com` and `shopnow.com`).
 
+### D-011: MySQL Service Container Provisioning with Healthchecks for GitHub Actions CI
+- Date: 2026-11-17
+- Status: Implemented
+- Problem: The GitHub Actions backend CI pipeline runs `./mvnw clean verify` on Ubuntu runners, but the test suite includes integration tests that execute against real MySQL on `localhost:3306`. Without a running MySQL instance, tests threw `CommunicationsException` and failed the CI pipeline.
+- Options considered:
+  - Option A: In-memory H2 database for testing. Rejected because H2 does not replicate MySQL dialect specifics, concurrency locking behavior (`@Version`), or MySQL native functions, producing false test positives.
+  - Option B: Embedded Testcontainers within JUnit. Adds significant Docker daemon startup overhead inside the test JVM and requires modifying existing test classes.
+  - Option C: GitHub Actions native `services.mysql` container with `mysql:8.0`, port forwarding `3306:3306`, and `mysqladmin ping` healthchecks.
+- Decision: Option C
+- Why chosen: Zero changes to Java test code or application config; provides a true MySQL 8.0 environment matching production and local setups; health check guarantees the container is fully initialized before Maven executes tests.
+- Why the others were NOT chosen: Option A masks real-world MySQL bugs and concurrency behavior; Option B requires rewriting existing integration tests.
+- Risks / known downsides of the chosen option: Adds ~10-15 seconds of service container startup and pull time per CI workflow run.
+- How to verify it works: Workflow runs on push/PR to main, starts `mysql:8.0`, waits for ping, and executes `./mvnw clean verify` cleanly.
+- Where in code: `.github/workflows/ci.yml`.
+- Revisit when: CI test suite is migrated to containerized Testcontainers or multi-node staging integration suites.
+
 # Open items / backlog
 
 # Concepts learned
@@ -228,6 +244,7 @@ Every decision entry must use this exact format:
 - Vercel Edge Reverse Proxy (BFF Pattern): Overcoming browser third-party cookie restrictions by proxying API paths (/api/*, /admin/*) through the frontend domain via vercel.json rewrites; treats authentication cookies as first-party cookies, bypassing cross-site cookie deprecation while eliminating CORS preflight overhead.
 - Frontend Async State Mutual Exclusivity: In React data-fetching feeds, empty state cards (`items.length === 0`) must be explicitly guarded with `!loading && !error` to prevent both the error banner and the empty catalog card from rendering simultaneously when an API call fails.
 - React State Update Identity Bailout: Calling `setState(0)` when `state` is already `0` produces an identical primitive value (`Object.is(0, 0)`), causing React to bail out without triggering dependent `useEffect` hooks. Re-fetching failed initial pages (`page === 0`) requires an incremental trigger or dedicated fetch callback to reliably force re-evaluation.
+- GitHub Actions Service Container Healthchecks: In GitHub Actions workflows, services (like MySQL 8.0) take 5-10 seconds to initialize schemas and accept connections. Defining `options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5` forces the runner to wait for container readiness before triggering Maven or test steps, eliminating race conditions during CI job startup.
 
 # Archive
 
